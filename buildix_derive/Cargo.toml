@@ -1,0 +1,25 @@
+[package]
+name = "buildix_derive"
+version = "0.1.0"
+authors = ["Peter Vrba <phonkee@pm.me>"]
+edition = "2018"
+description = "query builder for sqlx - derive"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "buildix_derive"
+proc-macro = true
+
+[dependencies]
+darling = "0.12"
+ident_case = "1"
+proc-macro-error = "1"
+proc-macro2 = "1"
+proc_macro_roids = "0.7"
+quote = "1"
+static_assertions = "1"
+sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
+syn = "1"
+thiserror = "1"

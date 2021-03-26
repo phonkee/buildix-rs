@@ -1,0 +1,19 @@
+[package]
+name = "buildix"
+version = "0.1.0"
+authors = ["Peter Vrba <phonkee@pm.me>"]
+edition = "2018"
+description = "query builder for sqlx"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1"
+buildix_derive = { path = "../buildix_derive" }
+sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
+static_assertions = "1"
+thiserror = "1"
+
+[dev-dependencies]
+buildix_derive = { path = "../buildix_derive" }
