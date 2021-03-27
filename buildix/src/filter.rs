@@ -2,7 +2,7 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use sqlx::Type;
+use sqlx::{Database, Type};
 
 // for now we don't care about values
 #[derive(Default)]
@@ -34,7 +34,7 @@ pub struct FilterInfo<'a> {
 
 // Filter trait
 pub trait Filter {
-    fn process_filter(&self, info: &FilterInfo) -> Option<FilterResult>;
+    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult>;
 }
 
 // Nullable is marker trait for fields that support `isnull`
@@ -42,6 +42,7 @@ pub trait Nullable {}
 
 pub mod fields {
     use super::{Filter, FilterInfo, FilterResult};
+    use sqlx::Database;
 
     // special IsNull field
     #[derive(Debug, Default, Eq, PartialEq)]
@@ -54,7 +55,7 @@ pub mod fields {
     }
 
     impl Filter for IsNull {
-        fn process_filter(&self, info: &FilterInfo) -> Option<FilterResult> {
+        fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
             match self.0 {
                 true => Some(FilterResult::new(
                     format!("{} ISNULL", info.ident),

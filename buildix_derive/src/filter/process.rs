@@ -103,7 +103,7 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
             #expr_tokens
 
             // call process_filter
-            if let Some(filter_result) = self.#field_ident.process_filter(&filter_info) {
+            if let Some(filter_result) = self.#field_ident.process_filter::<DB>(&filter_info) {
                 // add counter for next passes
                 filter_info.counter += filter_result.values.len();
                 filter_values.extend(filter_result.values);
@@ -132,7 +132,7 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
         // filter implementation
         impl ::buildix::filter::Filter for #ident {
 
-            fn process_filter(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult> {
+            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult> {
                 let mut filter_values: Vec<()> = vec![];
                 let mut filter_clauses: Vec<String> = vec![];
                 let mut filter_info = ::buildix::filter::FilterInfo::default();

@@ -225,8 +225,8 @@ impl quote::ToTokens for SelectBuilder {
             use buildix::limit::Limit as __Limit;
             use buildix::filter::Filter as __Filter;
             use buildix::prelude::*;
-            use static_assertions;
             use sqlx::database::Database;
+            use static_assertions;
 
             #limit_offset_assert
             #sort_tokens_asserts
@@ -254,7 +254,7 @@ impl quote::ToTokens for SelectBuilder {
                     let values: Vec<()> = vec![];
 
                     let fi = buildix::filter::FilterInfo::default();
-                    if let Some(filter_result) = self.process_filter(&fi) {
+                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
                         if !filter_result.clause.is_empty() {
                             parts.push(format!("WHERE {}", filter_result.clause).to_string());
                         }
