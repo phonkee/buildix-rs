@@ -240,10 +240,10 @@ impl quote::ToTokens for SelectBuilder {
                 fn get_query<DB: Database>(&mut self) -> (String, Vec<()>) {
                     // prepare query
                     // first is base query which should be prepared in binary
-                    let mut parts: Vec<String> = vec![self.#select_field_ident.get_query().to_string()];
+                    let mut parts: Vec<String> = vec![self.#select_field_ident.get_query::<DB>().to_string()];
 
                     // GROUP BY
-                    if let Some(group_by) = self.#select_field_ident.get_group() {
+                    if let Some(group_by) = self.#select_field_ident.get_group::<DB>() {
                         parts.push(group_by.to_owned());
                     }
 

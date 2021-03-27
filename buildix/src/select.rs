@@ -20,11 +20,11 @@ pub trait SelectBuilder {
 
 // Query trait
 pub trait Select {
-    fn get_fields(&self) -> &'static [&'static str];
-    fn get_fields_str(&self) -> &'static str;
-    fn get_table(&self) -> &'static str;
-    fn get_query(&self) -> &'static str;
-    fn get_group(&mut self) -> Option<&'static str>;
+    fn get_fields<DB: Database>(&self) -> &'static [&'static str];
+    fn get_fields_str<DB: Database>(&self) -> &'static str;
+    fn get_table<DB: Database>(&self) -> &'static str;
+    fn get_query<DB: Database>(&self) -> &'static str;
+    fn get_group<DB: Database>(&mut self) -> Option<&'static str>;
 }
 
 // implement Query for Vec<Query>
@@ -32,23 +32,23 @@ impl<T> Select for Vec<T>
 where
     T: Select + Default,
 {
-    fn get_fields(&self) -> &'static [&'static str] {
-        T::default().get_fields()
+    fn get_fields<DB: Database>(&self) -> &'static [&'static str] {
+        T::default().get_fields::<DB>()
     }
 
-    fn get_fields_str(&self) -> &'static str {
-        T::default().get_fields_str()
+    fn get_fields_str<DB: Database>(&self) -> &'static str {
+        T::default().get_fields_str::<DB>()
     }
 
-    fn get_table(&self) -> &'static str {
-        T::default().get_table()
+    fn get_table<DB: Database>(&self) -> &'static str {
+        T::default().get_table::<DB>()
     }
 
-    fn get_query(&self) -> &'static str {
-        T::default().get_query()
+    fn get_query<DB: Database>(&self) -> &'static str {
+        T::default().get_query::<DB>()
     }
 
-    fn get_group(&mut self) -> Option<&'static str> {
-        T::default().get_group()
+    fn get_group<DB: Database>(&mut self) -> Option<&'static str> {
+        T::default().get_group::<DB>()
     }
 }
