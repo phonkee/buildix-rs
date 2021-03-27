@@ -183,14 +183,14 @@ impl quote::ToTokens for SelectBuilder {
                 });
 
                 offset_clause.extend(quote! {
-                    if let Some(clause) = self.#offset_field_ident.get_offset() {
+                    if let Some(clause) = self.#offset_field_ident.get_offset::<DB>() {
                         parts.push(clause);
                     }
                 });
             }
 
             limit_offset_clause.extend(quote! {
-                if let Some(clause) = self.#limit_field_ident.get_limit() {
+                if let Some(clause) = self.#limit_field_ident.get_limit::<DB>() {
                     parts.push(clause);
 
                     // add offset if available
