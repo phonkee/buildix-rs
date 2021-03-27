@@ -138,7 +138,7 @@ impl quote::ToTokens for SelectBuilder {
 
             // now do something
             sort_tokens.extend(quote! {
-                if let Some(sort_clause) = self.#sort_ident.sort(#sort_ident_db) {
+                if let Some(sort_clause) = self.#sort_ident.sort::<DB>(#sort_ident_db) {
                     sorts.push(sort_clause);
                 }
             });

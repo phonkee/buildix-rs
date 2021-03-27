@@ -1,10 +1,11 @@
 #![warn(missing_debug_implementations)]
 #![allow(unused_imports)]
 
+use sqlx::Database;
 use std::fmt::Debug;
 
 pub trait Sorter {
-    fn sort(&self, ident: &str) -> Option<String>;
+    fn sort<DB: Database>(&self, ident: &str) -> Option<String>;
 }
 
 // direction in which to go
@@ -23,7 +24,7 @@ impl Default for Sort {
 
 // implement for sort
 impl Sorter for Sort {
-    fn sort(&self, ident: &str) -> Option<String> {
+    fn sort<DB: Database>(&self, ident: &str) -> Option<String> {
         Some(format!(
             "{} {}",
             ident,
@@ -37,9 +38,9 @@ impl Sorter for Sort {
 
 // implement for option
 impl Sorter for Option<Sort> {
-    fn sort(&self, ident: &str) -> Option<String> {
+    fn sort<DB: Database>(&self, ident: &str) -> Option<String> {
         match self {
-            Some(t) => t.sort(ident),
+            Some(t) => t.sort::<DB>(ident),
             None => None,
         }
     }
