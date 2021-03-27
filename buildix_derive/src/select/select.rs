@@ -258,11 +258,6 @@ impl quote::ToTokens for Select {
                     #group_tokens
                 }
             }
-
-            // implement Select
-            // impl ::buildix::select::Select for #ident {
-                // const BASIC_QUERY: &'static str = #base_query;
-            // }
         })
     }
 }

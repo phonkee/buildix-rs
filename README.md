@@ -40,6 +40,7 @@ Features that I am working on (in order)
   - [ ] Map - callback support
   - [ ] Execute
   - [ ] Stream support (low priority)
+  - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL)
 - DeleteBuilder
   - [ ] Filter (shared with SelectBuilder)
   - [ ] Limit (shared with SelectBuilder)
@@ -198,13 +199,13 @@ struct UserInsertBuilder {
 }
 
 #[derive(Insert)]
+#[buildix(table = "user", key = "id")]
 struct InsertUser {
     name: String,
     email: String,
     age: Option<i64>,
-    
-    #[buildix(returning)]
-    id: i32,
+    // #[buildix(returning)]
+    // id: i32,
 }
 ```
 
@@ -214,7 +215,7 @@ struct InsertUser {
 #[derive(UpdateBuilder)]
 struct UserUpdateBuilder {
     #[buildix(update)]
-    insert: Vec<Update>,
+    update: Vec<Update>,
     
     #[buildix(count)]
     count: i32,
