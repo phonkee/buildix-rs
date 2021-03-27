@@ -30,6 +30,9 @@ pub struct SelectBuilder {
     // map function
     #[darling(default)]
     map: Option<syn::Path>,
+
+    #[darling(default)]
+    error: Option<syn::Path>,
 }
 
 impl SelectBuilder {
