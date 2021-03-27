@@ -23,3 +23,9 @@ static_assertions = "1"
 sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
 syn = "1"
 thiserror = "1"
+
+[features]
+postres = []
+mysql = []
+sqlite = []
+mssql = []

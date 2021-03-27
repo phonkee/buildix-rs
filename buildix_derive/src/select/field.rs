@@ -1,6 +1,7 @@
 use darling::FromField;
 use proc_macro2::TokenStream;
 use quote::quote;
+use std::fmt::{Debug, Display};
 
 #[derive(Clone, Debug, FromField)]
 #[darling(attributes(buildix), forward_attrs(doc, allow, warn))]

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use std::fmt::Debug;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -18,4 +19,7 @@ pub enum Error {
 
     #[error("Invalid field: please provide either `table` or `expr` or none, but not both")]
     InvalidSelectField,
+
+    #[error("error")]
+    Error,
 }

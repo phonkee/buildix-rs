@@ -15,5 +15,11 @@ sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
 static_assertions = "1"
 thiserror = "1"
 
+[features]
+postres = ["buildix_derive/postres"]
+mysql = ["buildix_derive/mysql"]
+sqlite = ["buildix_derive/sqlite"]
+mssql = ["buildix_derive/mssql"]
+
 [dev-dependencies]
 buildix_derive = { path = "../buildix_derive" }

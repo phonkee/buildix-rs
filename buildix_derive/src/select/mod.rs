@@ -11,6 +11,7 @@ use darling::{self, ast, util, FromDeriveInput, FromField, FromMeta, FromVariant
 use proc_macro2::TokenStream;
 use proc_macro_error::*;
 use quote::quote;
+use std::fmt::{Debug, Formatter};
 
 #[derive(Debug, FromDeriveInput)]
 #[darling(
@@ -278,6 +279,9 @@ impl quote::ToTokens for SelectBuilder {
         })
     }
 }
+
+#[derive(Debug)]
+struct Err {}
 
 // validate Select
 pub fn validate(s: SelectBuilder) -> SelectBuilder {
