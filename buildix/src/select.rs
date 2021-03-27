@@ -2,14 +2,20 @@
 
 use async_trait::async_trait;
 use sqlx::database::Database;
+
+#[cfg(feature = "postgres")]
 use sqlx::postgres::Postgres;
+
+#[cfg(feature = "mysql")]
+use sqlx::mysql::MySql;
+
 use sqlx::Error;
 use sqlx::Pool;
 
 // select query implementation
 pub trait SelectBuilder {
     // returns query
-    fn get_query(&mut self) -> (String, Vec<()>);
+    fn get_query<DB: Database>(&mut self) -> (String, Vec<()>);
 }
 
 // Query trait

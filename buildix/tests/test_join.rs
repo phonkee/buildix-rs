@@ -6,11 +6,12 @@ use buildix_derive::{Filter, Select, SelectBuilder};
 
 #[allow(unused_imports)]
 use buildix::prelude::*;
+use sqlx::Postgres;
 
 #[test]
 fn test_simple() {
     let mut query = JoinQueryBuilder::default();
-    let (q, _v) = query.get_query();
+    let (q, _v) = query.get_query::<Postgres>();
 
     assert_eq!(
         q,
@@ -24,7 +25,7 @@ fn test_sort() {
     query.sort_name = Some(Sort::Asc);
     query.sort_age = Sort::Desc;
 
-    let (q, _v) = query.get_query();
+    let (q, _v) = query.get_query::<Postgres>();
 
     assert_eq!(
         q,

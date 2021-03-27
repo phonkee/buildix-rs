@@ -6,11 +6,12 @@ use buildix_derive::{Filter, Select, SelectBuilder};
 
 #[allow(unused_imports)]
 use buildix::prelude::*;
+use sqlx::Postgres;
 
 #[test]
 fn test_group() {
     let mut query = GroupQueryBuilder::default();
-    let (q, _) = query.get_query();
+    let (q, _) = query.get_query::<Postgres>();
     assert_eq!(q, r#"SELECT id FROM user GROUP BY name, age, email"#);
 }
 

@@ -16,7 +16,7 @@ static_assertions = "1"
 thiserror = "1"
 
 [features]
-postres = ["buildix_derive/postres"]
+postgres = ["buildix_derive/postgres"]
 mysql = ["buildix_derive/mysql"]
 sqlite = ["buildix_derive/sqlite"]
 mssql = ["buildix_derive/mssql"]

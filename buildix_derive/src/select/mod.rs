@@ -226,6 +226,7 @@ impl quote::ToTokens for SelectBuilder {
             use buildix::filter::Filter as __Filter;
             use buildix::prelude::*;
             use static_assertions;
+            use sqlx::database::Database;
 
             #limit_offset_assert
             #sort_tokens_asserts
@@ -236,7 +237,7 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn get_query(&mut self) -> (String, Vec<()>) {
+                fn get_query<DB: Database>(&mut self) -> (String, Vec<()>) {
                     // prepare query
                     // first is base query which should be prepared in binary
                     let mut parts: Vec<String> = vec![self.#select_field_ident.get_query().to_string()];
