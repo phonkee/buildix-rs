@@ -1,9 +1,11 @@
+use sqlx::Database;
+
 pub trait Offset {
-    fn get_offset(self) -> Option<String>;
+    fn get_offset<DB: Database>(self) -> Option<String>;
 }
 
 impl Offset for i32 {
-    fn get_offset(self) -> Option<String> {
+    fn get_offset<DB: Database>(self) -> Option<String> {
         if self <= 0 {
             None
         } else {
@@ -13,7 +15,7 @@ impl Offset for i32 {
 }
 
 impl Offset for i64 {
-    fn get_offset(self) -> Option<String> {
+    fn get_offset<DB: Database>(self) -> Option<String> {
         if self <= 0 {
             None
         } else {
@@ -26,9 +28,9 @@ impl<T> Offset for Option<T>
 where
     T: Offset,
 {
-    fn get_offset(self) -> Option<String> {
+    fn get_offset<DB: Database>(self) -> Option<String> {
         match self {
-            Some(t) => t.get_offset(),
+            Some(t) => t.get_offset::<DB>(),
             None => None,
         }
     }
