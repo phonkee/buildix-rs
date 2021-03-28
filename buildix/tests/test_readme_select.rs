@@ -15,7 +15,7 @@ fn test_readme_select() {
 
     assert_eq!(
         q,
-        r#"SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC"#
+        r#"SELECT u.name, u.email, u.custom_age AS age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC"#
     );
 
     qb.filter.inner.value = Some(42);
@@ -24,7 +24,7 @@ fn test_readme_select() {
 
     assert_eq!(
         q,
-        r#"SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC"#
+        r#"SELECT u.name, u.email, u.custom_age AS age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC"#
     );
 }
 
@@ -63,7 +63,7 @@ struct SelectUser {
     #[buildix(table = "u")]
     email: String,
 
-    #[buildix(table = "u")]
+    #[buildix(table = "u", column = "custom_age")]
     age: Option<i64>,
 
     #[buildix(expr = "IF(age > 18, true, false)")]

@@ -97,7 +97,7 @@ struct SelectUser {
     #[buildix(table = "u")]
     email: String,
 
-    #[buildix(table = "u")]
+    #[buildix(table = "u", column = "custom_age")]
     age: Option<i64>,
 
     #[buildix(expr = "IF(age > 18, true, false)")]
@@ -170,7 +170,7 @@ let (q, _) = query.to_sql::<Postgres>().unwrap();
 query is now
 
 ```sql
-SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC
+SELECT u.name, u.email, u.custom_age AS age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC
 ```
 
 if we set inner filter value
@@ -185,7 +185,7 @@ qb.filter.inner.value2 = Some(314);
 now query is
 
 ```sql
-SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC
+SELECT u.name, u.email, u.custom_age AS age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC
 ```
 
 You can see how powerful this filtering is. Not to say that there is more
