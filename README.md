@@ -48,7 +48,7 @@ Features that I am working on (in order)
   - [x] Filter (Implemented - testing)
   - [ ] Count
   - [ ] Having
-  - [ ] Map - callback support
+  - [x] Map - callback support
   - [ ] Execute
   - [ ] Stream support (low priority)
   - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL) - (design)
