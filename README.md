@@ -42,11 +42,10 @@ Features that I am working on (in order)
   - [ ] Stream support (low priority)
   - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL) - (design)
 - DeleteBuilder
-  - [ ] Filter (shared with SelectBuilder)
-  - [ ] Limit (shared with SelectBuilder)
-  - [ ] Offset
+  - [x] Filter (shared with SelectBuilder)
+  - [x] Limit (shared with SelectBuilder)
   - [ ] Count
-  - [ ] Map - callback support
+  - [x] Map - callback support
   - [ ] Execute
 - InsertBuilder
   - [ ] Insert
@@ -190,7 +189,7 @@ struct UserDeleteBuilder {
     limit: Option<i32>,
 
     #[buildix(count)]
-    count: i32, // count of deleted records
+    count: i32, // if configured, buildix will populate how many records has been deleted
 }
 
 // map_delete checks delete query (e.g. if limit is present)
