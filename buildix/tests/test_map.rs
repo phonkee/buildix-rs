@@ -20,12 +20,6 @@ fn test_map() {
 pub struct TestSelectBuilder {
     #[buildix(select)]
     select: Vec<SelectUser>,
-
-    #[buildix(sort = "name")]
-    sort_name: Option<buildix::sort::Sort>,
-
-    #[buildix(sort = "age")]
-    sort_age: buildix::sort::Sort,
 }
 
 #[derive(Debug, Error)]
@@ -41,24 +35,6 @@ pub fn map_select(_: &mut TestSelectBuilder) -> buildix::Result<()> {
 }
 
 #[derive(Default, Select)]
-#[buildix(from(table(name = "user")))]
 struct SelectUser {
-    // simple value
-    name: String,
-
-    // simple value
-    email: String,
-
-    // nullable value
-    #[buildix(table = "user")]
-    age: Option<i64>,
-
-    #[buildix(expr = "IF(age > 18, true, false)")]
-    is_adult: bool,
-
-    #[buildix(expr = r#"COALESCE(other, "")"#)]
-    other: String,
-
-    #[buildix(table = "user", column = "column")]
-    some_other: String,
+    id: i32,
 }
