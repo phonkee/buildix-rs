@@ -124,6 +124,9 @@ struct Filter {
     // inner filter will be sub clause in parentheses (if needed)
     inner: InnerFilter,
 
+    // inner filter will be sub clause in parentheses (if needed) 
+    inner: InnerFilter,
+    
     // Vec automatically converts to IN(...), if no value is available
     // this filter will not be available in where clause
     id: Vec<i32>,
