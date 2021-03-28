@@ -36,7 +36,7 @@ The vision is to bring at least basic power in span of next weeks.
 
 #### Features:
 
-Features that I am working on (in order)
+Features that I am working on (not in order)
 
 - SelectBuilder
   - [x] Base query
@@ -70,6 +70,9 @@ Features that I am working on (in order)
   - [ ] Count
   - [ ] Map - callback support
   - [ ] Execute w. Batch support
+
+The plan is to first be able to generate sql queries, then provide arguments
+and then work on executors. It's basically order from easiest to most tricky.
 
 # Example select query builder
 
