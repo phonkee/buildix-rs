@@ -248,7 +248,19 @@ impl quote::ToTokens for SelectBuilder {
                 fn to_sql<DB: Database>(&mut self) -> (String, Vec<()>) {
                     // prepare query
                     // first is base query which should be prepared in binary
+                    // TODO: remove vector in favor of String builder.
                     let mut parts: Vec<String> = vec![self.#select_field_ident.get_query::<DB>().to_string()];
+
+                    // now
+                    let values: Vec<()> = vec![];
+
+                    // filter builder, start with basic filter_info
+                    let fi = buildix::filter::FilterInfo::default();
+                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
+                        if !filter_result.clause.is_empty() {
+                            parts.push(format!("WHERE {}", filter_result.clause).to_string());
+                        }
+                    }
 
                     // GROUP BY
                     if let Some(group_by) = self.#select_field_ident.get_group::<DB>() {
@@ -256,17 +268,8 @@ impl quote::ToTokens for SelectBuilder {
                     }
 
                     #sort_clause
+
                     #limit_offset_clause
-
-                    // now
-                    let values: Vec<()> = vec![];
-
-                    let fi = buildix::filter::FilterInfo::default();
-                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
-                        if !filter_result.clause.is_empty() {
-                            parts.push(format!("WHERE {}", filter_result.clause).to_string());
-                        }
-                    }
 
                     let query = parts.join(" ");
 
@@ -276,15 +279,6 @@ impl quote::ToTokens for SelectBuilder {
 
             // assert that everything is fine
             static_assertions::assert_impl_all!(#select_field_type: ::buildix::Select);
-
-            // impl ::buildix::execute::Execute for #ident {
-            //     fn execute(
-            //         &mut self,
-            //         _pool: ::sqlx::Pool<::sqlx::postgres::Postgres>,
-            //     ) -> std::future::Future<Output = Result<(), ::sqlx::Error>> {
-            //         Ok(())
-            //     }
-            // }
         })
     }
 }

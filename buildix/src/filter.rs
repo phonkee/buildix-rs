@@ -4,7 +4,7 @@
 
 use sqlx::{Database, Type};
 
-// for now we don't care about values
+// FilterResult returns sql clause as well as values assigned.
 #[derive(Default)]
 pub struct FilterResult {
     pub clause: String,
@@ -44,28 +44,31 @@ pub mod fields {
     use super::{Filter, FilterInfo, FilterResult};
     use sqlx::Database;
 
-    // special IsNull field
+    // IsNull field that transforms into ISNULL, NOT ISNULL
+    // also works with Option seamlessly (as usual)
     #[derive(Debug, Default, Eq, PartialEq)]
     pub struct IsNull(bool);
 
+    // convert from bool (and back - thanks rust)
     impl From<bool> for IsNull {
         fn from(b: bool) -> Self {
             Self(b)
         }
     }
 
+    // implement filter for isnull
     impl Filter for IsNull {
         fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
             match self.0 {
                 true => Some(FilterResult::new(
                     format!("{} ISNULL", info.ident),
                     vec![],
-                    1,
+                    0,
                 )),
                 false => Some(FilterResult::new(
                     format!("{} NOT ISNULL", info.ident),
                     vec![],
-                    1,
+                    0,
                 )),
             }
         }

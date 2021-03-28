@@ -40,7 +40,7 @@ Features that I am working on (in order)
   - [ ] Map - callback support
   - [ ] Execute
   - [ ] Stream support (low priority)
-  - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL)
+  - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL) - (design)
 - DeleteBuilder
   - [ ] Filter (shared with SelectBuilder)
   - [ ] Limit (shared with SelectBuilder)
@@ -121,7 +121,18 @@ struct Filter {
     priority: i32,
     
     #[buildix(expr = "age > ?", isnull)]
-    age: Option<i32>
+    age: Option<i32>,
+
+    // inner filter will be    
+    inner: InnerFilter,
+}
+
+// even multiple filters supported
+#[derive(Default, Filter)]
+#[buildix(operator = "AND")]
+struct InnerFilter {
+    value: Option<i32>,
+    value2: Option<i32>,
 }
 
 ```
