@@ -218,6 +218,7 @@ not a priority.
 
 # Delete query builder
 
+**Partially designed.**
 
 ```rust
 #[derive(DeleteBuilder)]
@@ -254,6 +255,8 @@ struct Filter {
 
 # Insert query builder
 
+**Not fully designed yet.**
+
 ```rust
 #[derive(InsertBuilder)]
 struct UserInsertBuilder {
@@ -282,6 +285,9 @@ struct InsertUser {
 ```
 
 # Update query builder
+
+**Not fully designed yet.**
+
 
 ```rust
 #[derive(UpdateBuilder)]
