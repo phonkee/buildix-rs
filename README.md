@@ -40,12 +40,12 @@ Features that I am working on (in order)
   - [ ] Map - callback support
   - [ ] Execute
   - [ ] Stream support (low priority)
+  - [ ] support all dialects (Postgres, MySQL, SQLite, MS SQL) - (design)
 - DeleteBuilder
-  - [ ] Filter (shared with SelectBuilder)
-  - [ ] Limit (shared with SelectBuilder)
-  - [ ] Offset
+  - [x] Filter (shared with SelectBuilder)
+  - [x] Limit (shared with SelectBuilder)
   - [ ] Count
-  - [ ] Map - callback support
+  - [x] Map - callback support
   - [ ] Execute
 - InsertBuilder
   - [ ] Insert
@@ -120,7 +120,22 @@ struct Filter {
     priority: i32,
     
     #[buildix(expr = "age > ?", isnull)]
-    age: Option<i32>
+    age: Option<i32>,
+
+    // inner filter will be sub clause in parentheses (if needed) 
+    inner: InnerFilter,
+    
+    // Vec automatically converts to IN(...), if no value is available
+    // this filter will not be available in where clause
+    id: Vec<i32>,
+}
+
+// even multiple filters supported
+#[derive(Default, Filter)]
+#[buildix(operator = "AND")]
+struct InnerFilter {
+    value: Option<i32>,
+    value2: Option<i32>,
 }
 
 ```
@@ -165,13 +180,24 @@ Stream.
 
 ```rust
 #[derive(DeleteBuilder)]
-#[buildix(table(name="user"))]
+#[buildix(table="user", map="map_delete")]
 struct UserDeleteBuilder {
     #[buildix(filter)]
     filter: Filter,
 
     #[buildix(limit)]
-    limit: i32,
+    limit: Option<i32>,
+
+    #[buildix(count)]
+    count: i32, // if configured, buildix will populate how many records has been deleted
+}
+
+// map_delete checks delete query (e.g. if limit is present)
+pub fn map_delete(builder: &mut UserDeleteBuilder) -> buildix::Result<()> {
+    if builder.filter.user_id == 0 {
+        // return error or set user_id to Option<i32>
+    }
+    Ok(())
 }
 
 #[derive(FilterQuery)]
@@ -198,13 +224,19 @@ struct UserInsertBuilder {
 }
 
 #[derive(Insert)]
+#[buildix(table = "user", unique_key = "id")]
 struct InsertUser {
+    #[buildix(update)]
     name: String,
+
+    // this field will not be updated when doing `ON DUPLICATE KEY`
     email: String,
+
+    #[buildix(update)]
     age: Option<i64>,
     
-    #[buildix(returning)]
-    id: i32,
+    // #[buildix(returning)]
+    // id: i32,
 }
 ```
 
@@ -214,7 +246,7 @@ struct InsertUser {
 #[derive(UpdateBuilder)]
 struct UserUpdateBuilder {
     #[buildix(update)]
-    insert: Vec<Update>,
+    update: Vec<Update>,
     
     #[buildix(count)]
     count: i32,
@@ -228,6 +260,11 @@ struct UpdateUser {
     age: Option<i64>,
     
     #[buildix(filter)]
+    filter: UpdateFilter,
+}
+
+#[derive(Default, Filter)]
+pub struct UpdateFilter {
     id: i32,
 }
 

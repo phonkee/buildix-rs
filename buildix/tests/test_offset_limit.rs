@@ -6,21 +6,22 @@ use buildix_derive::{Filter, Select, SelectBuilder};
 
 #[allow(unused_imports)]
 use buildix::prelude::*;
+use sqlx::Postgres;
 
 #[test]
 fn test_offset_limit() {
     let mut query = OffsetLimitBuilder::default();
 
-    let (q, _v) = query.get_query();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(q, r#"SELECT id FROM user"#);
 
     query.limit = Some(42);
-    let (q, _v) = query.get_query();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(q, r#"SELECT id FROM user LIMIT 42"#);
 
     query.offset = 84;
 
-    let (q, _v) = query.get_query();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(q, r#"SELECT id FROM user LIMIT 42 OFFSET 84"#);
 }
 

@@ -5,12 +5,12 @@ use quote::quote;
 
 #[derive(Debug)]
 pub struct Field {
-    ident: syn::Ident,
-    ty: syn::Type,
-    expr: String,
-    table: String,
-    column: String,
-    isnull: bool,
+    pub ident: syn::Ident,
+    pub ty: syn::Type,
+    pub expr: String,
+    pub table: String,
+    pub column: String,
+    pub isnull: bool,
 }
 
 impl Field {
@@ -103,19 +103,13 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
             #expr_tokens
 
             // call process_filter
-            if let Some(filter_result) = self.#field_ident.process_filter(&filter_info) {
+            if let Some(filter_result) = self.#field_ident.process_filter::<DB>(&filter_info) {
                 // add counter for next passes
                 filter_info.counter += filter_result.values.len();
                 filter_values.extend(filter_result.values);
 
-                // check if we have results
-                if filter_result.count > 0 {
-                    if filter_result.count > 1 {
-                        filter_clauses.push(format!("({})", filter_result.clause).to_string());
-                    } else {
-                        filter_clauses.push(filter_result.clause.clone());
-                    }
-                }
+                // check if we have filters (count)
+                filter_clauses.push(filter_result.clause.clone());
             };
         });
     }
@@ -132,7 +126,7 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
         // filter implementation
         impl ::buildix::filter::Filter for #ident {
 
-            fn process_filter(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult> {
+            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult> {
                 let mut filter_values: Vec<()> = vec![];
                 let mut filter_clauses: Vec<String> = vec![];
                 let mut filter_info = ::buildix::filter::FilterInfo::default();
@@ -145,7 +139,13 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 } else {
                     // get size of values
                     let len = filter_values.len();
-                    Some(::buildix::filter::FilterResult::new(filter_clauses.join(#operator), filter_values, len))
+                    let mut clause = filter_clauses.join(#operator);
+
+                    if filter_clauses.len() > 1 {
+                        clause = format!("({})", clause);
+                    }
+
+                    Some(::buildix::filter::FilterResult::new(clause, filter_values, len))
                 }
             }
         }

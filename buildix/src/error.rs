@@ -5,9 +5,6 @@ pub enum Error {
     #[error("sqlx error: `{0}`")]
     Sqlx(sqlx::error::Error),
 
-    #[error("filter error: `{0}`")]
-    Filter(String),
-
-    #[error("select query error: `{0}`")]
-    SelectBuilder(String),
+    #[error("map error: `{0}`")]
+    MapError(Box<dyn std::error::Error>),
 }

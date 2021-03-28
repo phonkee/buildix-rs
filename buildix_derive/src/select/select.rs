@@ -230,37 +230,34 @@ impl quote::ToTokens for Select {
         _tokens.extend(quote! {
             #[allow(unused_imports)]
             use buildix::Select as __Select;
+            use sqlx::postgres::Postgres as __Postgres;
+            use sqlx::database::Database as __Database;
 
             // implement query first
             impl ::buildix::Select for #ident {
                 #[inline]
-                fn get_fields_str(&self) -> &'static str {
+                fn get_fields_str<DB: Database>(&self) -> &'static str {
                     #all_fields
                 }
                 #[inline]
-                fn get_table(&self) -> &'static str {
+                fn get_table<DB: Database>(&self) -> &'static str {
                     #table
                 }
                 #[inline]
-                fn get_fields(&self) -> &'static [&'static str] {
+                fn get_fields<DB: Database>(&self) -> &'static [&'static str] {
                     &[
                         #(#fields),*
                     ]
                 }
                 #[inline]
-                fn get_query(&self) -> &'static str {
+                fn get_query<DB: Database>(&self) -> &'static str {
                     #query
                 }
                 #[inline]
-                fn get_group(&mut self) -> Option<&'static str> {
+                fn get_group<DB: Database>(&mut self) -> Option<&'static str> {
                     #group_tokens
                 }
             }
-
-            // implement Select
-            // impl ::buildix::select::Select for #ident {
-                // const BASIC_QUERY: &'static str = #base_query;
-            // }
         })
     }
 }

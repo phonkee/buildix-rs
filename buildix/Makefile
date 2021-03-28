@@ -1,7 +1,7 @@
 .PHONY: test
 test:
-	cargo test test_group -- --nocapture
+	cargo t test_delete -- --nocapture
 
 .PHONY: expand
 expand:
-	cargo expand --test test_group
+	cargo expand --test test_delete

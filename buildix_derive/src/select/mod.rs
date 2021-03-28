@@ -8,9 +8,10 @@ mod select;
 pub use select::Select;
 
 use darling::{self, ast, util, FromDeriveInput, FromField, FromMeta, FromVariant};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use proc_macro_error::*;
 use quote::quote;
+use std::fmt::{Debug, Formatter};
 
 #[derive(Debug, FromDeriveInput)]
 #[darling(
@@ -29,6 +30,14 @@ pub struct SelectBuilder {
     // map function
     #[darling(default)]
     map: Option<syn::Path>,
+
+    #[darling(default)]
+    error: Option<syn::Ident>,
+}
+
+// TODO: this is not working because of some duplicates
+pub fn default_error() -> syn::Ident {
+    syn::Ident::new("std::error::Error", Span::call_site())
 }
 
 impl SelectBuilder {
@@ -124,7 +133,22 @@ impl quote::ToTokens for SelectBuilder {
         let mut sort_tokens_asserts = TokenStream::new();
         let mut sort_clause = TokenStream::new();
 
+        let mut asserts = TokenStream::new();
+
         let sorts_len = self.get_sort_fields().len();
+
+        // map function implementation
+        let mut map_fn_impl = TokenStream::new();
+
+        // TODO: make better error handling and better implementation possibly
+        if let Some(_path) = &self.map {
+            map_fn_impl.extend(quote! {
+                let _fun: &dyn Fn(&mut #ident) -> buildix::Result<()> = &#_path;
+
+                // call map function
+                let _ = #_path(self)?;
+            });
+        }
 
         // iterate over fields
         for field in self.get_sort_fields() {
@@ -137,7 +161,7 @@ impl quote::ToTokens for SelectBuilder {
 
             // now do something
             sort_tokens.extend(quote! {
-                if let Some(sort_clause) = self.#sort_ident.sort(#sort_ident_db) {
+                if let Some(sort_clause) = self.#sort_ident.sort::<DB>(#sort_ident_db) {
                     sorts.push(sort_clause);
                 }
             });
@@ -161,14 +185,13 @@ impl quote::ToTokens for SelectBuilder {
 
         // prepare limit offset
         let mut limit_offset_clause = TokenStream::new();
-        let mut limit_offset_assert = TokenStream::new();
 
         // offset cannot be used without limit, so first is to check limit
         if let Some(limit_field) = limit_field {
             let limit_field_type = &limit_field.ty;
             let limit_field_ident = &limit_field.ident.as_ref();
             // assert limit type
-            limit_offset_assert.extend(quote! {
+            asserts.extend(quote! {
                 static_assertions::assert_impl_all!(#limit_field_type: ::buildix::limit::Limit);
             });
 
@@ -177,19 +200,19 @@ impl quote::ToTokens for SelectBuilder {
             if let Some(offset_field) = offset_field {
                 let offset_field_type = &offset_field.ty;
                 let offset_field_ident = &offset_field.ident.as_ref();
-                limit_offset_assert.extend(quote! {
+                asserts.extend(quote! {
                     static_assertions::assert_impl_all!(#offset_field_type: ::buildix::offset::Offset);
                 });
 
                 offset_clause.extend(quote! {
-                    if let Some(clause) = self.#offset_field_ident.get_offset() {
+                    if let Some(clause) = self.#offset_field_ident.get_offset::<DB>() {
                         parts.push(clause);
                     }
                 });
             }
 
             limit_offset_clause.extend(quote! {
-                if let Some(clause) = self.#limit_field_ident.get_limit() {
+                if let Some(clause) = self.#limit_field_ident.get_limit::<DB>() {
                     parts.push(clause);
 
                     // add offset if available
@@ -224,9 +247,10 @@ impl quote::ToTokens for SelectBuilder {
             use buildix::limit::Limit as __Limit;
             use buildix::filter::Filter as __Filter;
             use buildix::prelude::*;
+            use sqlx::database::Database;
             use static_assertions;
 
-            #limit_offset_assert
+            #asserts
             #sort_tokens_asserts
 
             // filter implementation
@@ -235,49 +259,50 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn get_query(&mut self) -> (String, Vec<()>) {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+
+                    // first run map function (if available)
+                    #map_fn_impl
+
                     // prepare query
                     // first is base query which should be prepared in binary
-                    let mut parts: Vec<String> = vec![self.#select_field_ident.get_query().to_string()];
-
-                    // GROUP BY
-                    if let Some(group_by) = self.#select_field_ident.get_group() {
-                        parts.push(group_by.to_owned());
-                    }
-
-                    #sort_clause
-                    #limit_offset_clause
+                    // TODO: remove vector in favor of String builder.
+                    let mut parts: Vec<String> = vec![self.#select_field_ident.get_query::<DB>().to_string()];
 
                     // now
                     let values: Vec<()> = vec![];
 
+                    // filter builder, start with basic filter_info
                     let fi = buildix::filter::FilterInfo::default();
-                    if let Some(filter_result) = self.process_filter(&fi) {
+                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
                         if !filter_result.clause.is_empty() {
                             parts.push(format!("WHERE {}", filter_result.clause).to_string());
                         }
                     }
 
+                    // GROUP BY
+                    if let Some(group_by) = self.#select_field_ident.get_group::<DB>() {
+                        parts.push(group_by.to_owned());
+                    }
+
+                    #sort_clause
+
+                    #limit_offset_clause
+
                     let query = parts.join(" ");
 
-                    (query, values)
+                    Ok((query, values))
                 }
             }
 
             // assert that everything is fine
             static_assertions::assert_impl_all!(#select_field_type: ::buildix::Select);
-
-            // impl ::buildix::execute::Execute for #ident {
-            //     fn execute(
-            //         &mut self,
-            //         _pool: ::sqlx::Pool<::sqlx::postgres::Postgres>,
-            //     ) -> std::future::Future<Output = Result<(), ::sqlx::Error>> {
-            //         Ok(())
-            //     }
-            // }
         })
     }
 }
+
+#[derive(Debug)]
+struct Err {}
 
 // validate Select
 pub fn validate(s: SelectBuilder) -> SelectBuilder {
@@ -305,20 +330,20 @@ pub fn validate(s: SelectBuilder) -> SelectBuilder {
     // check for duplicates
     s.validate_single(
         |f| f.select,
-        crate::Error::Multiple("#[buildix(query)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(query)]".to_string()),
     );
     s.validate_single(
         |f| f.offset,
-        crate::Error::Multiple("#[buildix(offset)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(offset)]".to_string()),
     );
     s.validate_single(
         |f| f.limit,
-        crate::Error::Multiple("#[buildix(limit)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(limit)]".to_string()),
     );
     // check for duplicate group
     s.validate_single(
         |f| f.group,
-        crate::Error::Multiple("#[buildix(group)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(group)]".to_string()),
     );
 
     s

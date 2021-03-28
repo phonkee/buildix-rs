@@ -8,5 +8,7 @@ use sqlx::Pool;
 #[async_trait]
 pub trait Execute {
     // perform query
-    async fn execute(&mut self, pool: Pool<Postgres>) -> Result<(), Error>;
+    async fn execute<DB: Database, T>(&mut self, pool: Pool<DB>) -> Result<(), T>
+    where
+        T: Into<crate::error::Error>;
 }

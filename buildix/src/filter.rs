@@ -2,9 +2,9 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use sqlx::Type;
+use sqlx::{Database, Type};
 
-// for now we don't care about values
+// FilterResult returns sql clause as well as values assigned.
 #[derive(Default)]
 pub struct FilterResult {
     pub clause: String,
@@ -34,7 +34,7 @@ pub struct FilterInfo<'a> {
 
 // Filter trait
 pub trait Filter {
-    fn process_filter(&self, info: &FilterInfo) -> Option<FilterResult>;
+    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult>;
 }
 
 // Nullable is marker trait for fields that support `isnull`
@@ -42,19 +42,26 @@ pub trait Nullable {}
 
 pub mod fields {
     use super::{Filter, FilterInfo, FilterResult};
+    use crate::filter::Nullable;
+    use sqlx::Database;
 
-    // special IsNull field
+    // IsNull field that transforms into ISNULL, NOT ISNULL
+    // also works with Option seamlessly (as usual)
     #[derive(Debug, Default, Eq, PartialEq)]
     pub struct IsNull(bool);
 
+    // convert from bool (and back - thanks rust)
     impl From<bool> for IsNull {
         fn from(b: bool) -> Self {
             Self(b)
         }
     }
 
+    impl Nullable for IsNull {}
+
+    // implement filter for isnull
     impl Filter for IsNull {
-        fn process_filter(&self, info: &FilterInfo) -> Option<FilterResult> {
+        fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
             match self.0 {
                 true => Some(FilterResult::new(
                     format!("{} ISNULL", info.ident),
