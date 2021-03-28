@@ -22,7 +22,10 @@ fn test_readme_select() {
     qb.filter.inner.value2 = Some(314);
     let (q, _) = qb.to_sql::<Postgres>().unwrap();
 
-    assert_eq!(q, "SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC");
+    assert_eq!(
+        q,
+        r#"SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC"#
+    );
 }
 
 #[derive(Default, SelectBuilder)]

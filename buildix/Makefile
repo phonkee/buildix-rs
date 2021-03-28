@@ -1,7 +1,7 @@
 .PHONY: test
 test:
-	cargo t test_delete -- --nocapture
+	cargo t test_readme_select -- --nocapture
 
 .PHONY: expand
 expand:
-	cargo expand --test test_delete
+	cargo expand --test test_readme_select

@@ -40,6 +40,16 @@ pub struct Filter {
 pub fn validate_filter(f: Filter) -> Filter {
     // validate operator first
     // TODO: validate operator and other
+    let oper = f.operator.0.trim().to_lowercase();
+
+    // check operator
+    match oper.as_str() {
+        "and" => {}
+        "or" => {}
+        x => {
+            abort!(f.ident, format!("invalid filter operator: {}", x));
+        }
+    };
 
     f
 }
