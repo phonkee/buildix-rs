@@ -11,7 +11,7 @@ use sqlx::Postgres;
 #[test]
 fn test_simple() {
     let mut query = JoinQueryBuilder::default();
-    let (q, _v) = query.get_query::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>();
 
     assert_eq!(
         q,
@@ -25,7 +25,7 @@ fn test_sort() {
     query.sort_name = Some(Sort::Asc);
     query.sort_age = Sort::Desc;
 
-    let (q, _v) = query.get_query::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>();
 
     assert_eq!(
         q,

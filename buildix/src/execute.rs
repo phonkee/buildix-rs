@@ -7,6 +7,8 @@ use sqlx::Pool;
 
 #[async_trait]
 pub trait Execute {
+    type Err;
+
     // perform query
     async fn execute<DB: Database, T>(&mut self, pool: Pool<DB>) -> Result<Vec<T>, Error>
     where

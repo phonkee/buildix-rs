@@ -11,7 +11,7 @@ use sqlx::Postgres;
 #[test]
 fn test_simple() {
     let mut query = TestSelectBuilder::default();
-    let (q, _) = query.get_query::<Postgres>();
+    let (q, _) = query.to_sql::<Postgres>();
     assert_eq!(
         q,
         r#"SELECT name, email, user.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other, user.column AS some_other FROM user ORDER BY age ASC"#
@@ -23,7 +23,7 @@ fn test_sort() {
     let mut query = TestSelectBuilder::default();
     query.sort_name = Some(Sort::Asc);
     query.sort_age = Sort::Desc;
-    let (q, _) = query.get_query::<Postgres>();
+    let (q, _) = query.to_sql::<Postgres>();
 
     assert_eq!(
         q,

@@ -8,7 +8,7 @@ mod select;
 pub use select::Select;
 
 use darling::{self, ast, util, FromDeriveInput, FromField, FromMeta, FromVariant};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use proc_macro_error::*;
 use quote::quote;
 use std::fmt::{Debug, Formatter};
@@ -32,7 +32,12 @@ pub struct SelectBuilder {
     map: Option<syn::Path>,
 
     #[darling(default)]
-    error: Option<syn::Path>,
+    error: Option<syn::Ident>,
+}
+
+// TODO: this is not working because of some duplicates
+pub fn default_error() -> syn::Ident {
+    syn::Ident::new("std::error::Error", Span::call_site())
 }
 
 impl SelectBuilder {
@@ -240,7 +245,7 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn get_query<DB: Database>(&mut self) -> (String, Vec<()>) {
+                fn to_sql<DB: Database>(&mut self) -> (String, Vec<()>) {
                     // prepare query
                     // first is base query which should be prepared in binary
                     let mut parts: Vec<String> = vec![self.#select_field_ident.get_query::<DB>().to_string()];
