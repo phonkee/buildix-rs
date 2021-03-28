@@ -1,5 +1,6 @@
 #[macro_use]
 mod select;
+mod delete;
 mod error;
 mod filter;
 
@@ -8,6 +9,18 @@ use proc_macro::TokenStream;
 use proc_macro_error::proc_macro_error;
 use proc_macro_roids::DeriveInputExt;
 use quote::quote;
+
+#[proc_macro_derive(DeleteBuilder, attributes(buildix))]
+#[proc_macro_error]
+pub fn derive_delete_builder(input: TokenStream) -> TokenStream {
+    let input: syn::DeriveInput = syn::parse_macro_input!(input);
+    let builder: delete::Builder = darling::FromDeriveInput::from_derive_input(&input).unwrap();
+
+    // prepare new tokens
+    let mut toks = proc_macro2::TokenStream::new();
+    toks.extend(quote! {#builder});
+    toks.into()
+}
 
 #[proc_macro_derive(Filter, attributes(buildix))]
 #[proc_macro_error]

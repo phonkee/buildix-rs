@@ -22,4 +22,9 @@ pub enum Error {
 
     #[error("error")]
     Error,
+
+    #[error(
+        "Only buildix fields allowed: #[buildix(filter)], #[buildix(count)], #[buildix(limit)]"
+    )]
+    InvalidDelete,
 }

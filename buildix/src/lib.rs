@@ -1,3 +1,4 @@
+pub mod delete;
 pub mod error;
 pub mod execute;
 pub mod filter;
@@ -8,6 +9,7 @@ pub mod result;
 pub mod select;
 pub mod sort;
 
+pub use crate::delete::DeleteBuilder;
 pub use crate::error::Error;
 pub use crate::result::Result;
 pub use crate::select::{Select, SelectBuilder};

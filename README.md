@@ -181,13 +181,24 @@ Stream.
 
 ```rust
 #[derive(DeleteBuilder)]
-#[buildix(table(name="user"))]
+#[buildix(table="user", map="map_delete")]
 struct UserDeleteBuilder {
     #[buildix(filter)]
     filter: Filter,
 
     #[buildix(limit)]
-    limit: i32,
+    limit: Option<i32>,
+
+    #[buildix(count)]
+    count: i32, // count of deleted records
+}
+
+// map_delete checks delete query (e.g. if limit is present)
+pub fn map_delete(builder: &mut UserDeleteBuilder) -> buildix::Result<()> {
+    if builder.filter.user_id == 0 {
+        // return error or set user_id to Option<i32>
+    }
+    Ok(())
 }
 
 #[derive(FilterQuery)]
@@ -216,8 +227,13 @@ struct UserInsertBuilder {
 #[derive(Insert)]
 #[buildix(table = "user", key = "id")]
 struct InsertUser {
+    #[buildix(update)]
     name: String,
+
+    // this field will not be updated when doing `ON DUPLICATE KEY`
     email: String,
+
+    #[buildix(update)]
     age: Option<i64>,
     // #[buildix(returning)]
     // id: i32,

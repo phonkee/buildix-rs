@@ -143,9 +143,10 @@ impl quote::ToTokens for SelectBuilder {
         // TODO: make better error handling and better implementation possibly
         if let Some(_path) = &self.map {
             map_fn_impl.extend(quote! {
-                // call map function
                 let _fun: &dyn Fn(&mut #ident) -> buildix::Result<()> = &#_path;
-                let _ = _fun(self)?;
+
+                // call map function
+                let _ = #_path(self)?;
             });
         }
 

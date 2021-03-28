@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 
+pub use super::delete::DeleteBuilder;
 pub use super::select::{Select, SelectBuilder};
 pub use super::sort::Sort;
 use crate::filter::Nullable;
