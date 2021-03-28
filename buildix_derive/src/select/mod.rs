@@ -133,6 +133,8 @@ impl quote::ToTokens for SelectBuilder {
         let mut sort_tokens_asserts = TokenStream::new();
         let mut sort_clause = TokenStream::new();
 
+        let mut asserts = TokenStream::new();
+
         let sorts_len = self.get_sort_fields().len();
 
         let mut map_fn_impl = TokenStream::new();
@@ -142,7 +144,8 @@ impl quote::ToTokens for SelectBuilder {
         if let Some(_path) = &self.map {
             map_fn_impl.extend(quote! {
                 // call map function
-                let _ = #_path(self)?;
+                let _fun: &dyn Fn(&mut #ident) -> buildix::Result<()> = &#_path;
+                let _ = _fun(self)?;
             });
         }
 
@@ -181,14 +184,13 @@ impl quote::ToTokens for SelectBuilder {
 
         // prepare limit offset
         let mut limit_offset_clause = TokenStream::new();
-        let mut limit_offset_assert = TokenStream::new();
 
         // offset cannot be used without limit, so first is to check limit
         if let Some(limit_field) = limit_field {
             let limit_field_type = &limit_field.ty;
             let limit_field_ident = &limit_field.ident.as_ref();
             // assert limit type
-            limit_offset_assert.extend(quote! {
+            asserts.extend(quote! {
                 static_assertions::assert_impl_all!(#limit_field_type: ::buildix::limit::Limit);
             });
 
@@ -197,7 +199,7 @@ impl quote::ToTokens for SelectBuilder {
             if let Some(offset_field) = offset_field {
                 let offset_field_type = &offset_field.ty;
                 let offset_field_ident = &offset_field.ident.as_ref();
-                limit_offset_assert.extend(quote! {
+                asserts.extend(quote! {
                     static_assertions::assert_impl_all!(#offset_field_type: ::buildix::offset::Offset);
                 });
 
@@ -247,7 +249,7 @@ impl quote::ToTokens for SelectBuilder {
             use sqlx::database::Database;
             use static_assertions;
 
-            #limit_offset_assert
+            #asserts
             #sort_tokens_asserts
 
             // filter implementation
