@@ -159,6 +159,8 @@ tests directory [test_readme_select.rs](buildix/tests/test_readme_select.rs)
 
 
 First lets create default querybuilder.
+The columns do not correspond with database, it's just show off, what
+possibilities buildix has.
 
 ```rust
 let mut qb = SelectUserBuilder::default();
