@@ -137,10 +137,10 @@ impl quote::ToTokens for SelectBuilder {
 
         let sorts_len = self.get_sort_fields().len();
 
+        // map function implementation
         let mut map_fn_impl = TokenStream::new();
-        // add map function
 
-        // TODO: add error handling
+        // TODO: make better error handling
         if let Some(_path) = &self.map {
             map_fn_impl.extend(quote! {
                 // call map function
@@ -260,7 +260,7 @@ impl quote::ToTokens for SelectBuilder {
                 // get_query returns query string
                 fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
 
-                    // first validate
+                    // first run map function (if available)
                     #map_fn_impl
 
                     // prepare query
