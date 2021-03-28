@@ -15,7 +15,7 @@ use sqlx::Pool;
 // select query implementation
 pub trait SelectBuilder {
     // returns query
-    fn to_sql<DB: Database>(&mut self) -> (String, Vec<()>);
+    fn to_sql<DB: Database>(&mut self) -> crate::Result<(String, Vec<()>)>;
 }
 
 // Query trait

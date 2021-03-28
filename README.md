@@ -123,8 +123,12 @@ struct Filter {
     #[buildix(expr = "age > ?", isnull)]
     age: Option<i32>,
 
-    // inner filter will be    
+    // inner filter will be sub clause in parentheses (if needed) 
     inner: InnerFilter,
+    
+    // Vec automatically converts to IN(...), if no value is available
+    // this filter will not be available in where clause
+    id: Vec<i32>,
 }
 
 // even multiple filters supported

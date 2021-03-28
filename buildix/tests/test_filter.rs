@@ -9,14 +9,14 @@ use sqlx::Postgres;
 #[test]
 fn test_filter() {
     let mut query = FilterQuery::default();
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE priority = ? AND age ISNULL"#
     );
 
     query.filter.author_id = Some(2);
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
 
     assert_eq!(
         q,
@@ -24,28 +24,28 @@ fn test_filter() {
     );
 
     query.filter.last_updated = Some(12345);
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE (author_id = ? AND last_updated < ? AND priority = ? AND age ISNULL)"#
     );
 
     query.filter.something = Some(false.into());
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE (author_id = ? AND last_updated < ? AND priority = ? AND age ISNULL AND something NOT ISNULL)"#
     );
 
     query.filter.inner.inner_id = Some(42);
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE (author_id = ? AND last_updated < ? AND priority = ? AND age ISNULL AND something NOT ISNULL AND inner_id = ?)"#
     );
 
     query.filter.inner.second = Some(314);
-    let (q, _v) = query.to_sql::<Postgres>();
+    let (q, _v) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE (author_id = ? AND last_updated < ? AND priority = ? AND age ISNULL AND something NOT ISNULL AND (inner_id = ? OR second = ?))"#

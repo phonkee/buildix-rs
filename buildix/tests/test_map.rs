@@ -9,26 +9,9 @@ use buildix::prelude::*;
 use sqlx::Postgres;
 
 #[test]
-fn test_simple() {
+fn test_map() {
     let mut query = TestSelectBuilder::default();
-    let (q, _) = query.to_sql::<Postgres>().unwrap();
-    assert_eq!(
-        q,
-        r#"SELECT name, email, user.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other, user.column AS some_other FROM user ORDER BY age ASC"#
-    );
-}
-
-#[test]
-fn test_sort() {
-    let mut query = TestSelectBuilder::default();
-    query.sort_name = Some(Sort::Asc);
-    query.sort_age = Sort::Desc;
-    let (q, _) = query.to_sql::<Postgres>().unwrap();
-
-    assert_eq!(
-        q,
-        r#"SELECT name, email, user.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other, user.column AS some_other FROM user ORDER BY name ASC, age DESC"#
-    );
+    assert!(query.to_sql::<Postgres>().is_err());
 }
 
 #[derive(Default, SelectBuilder)]
@@ -47,7 +30,7 @@ pub struct TestSelectBuilder {
 // map_select is called before execute, and when error is returned, it is returned back.
 // this is useful for various validations.
 pub fn map_select(_: &mut TestSelectBuilder) -> buildix::Result<()> {
-    Ok(())
+    Err(buildix::Error::Custom("error".to_string()))
 }
 
 #[derive(Default, Select)]

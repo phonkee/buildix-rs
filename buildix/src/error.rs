@@ -8,6 +8,6 @@ pub enum Error {
     #[error("filter error: `{0}`")]
     Filter(String),
 
-    #[error("select query error: `{0}`")]
-    SelectBuilder(String),
+    #[error("custom error: `{0}`")]
+    Custom(String),
 }

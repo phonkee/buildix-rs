@@ -135,6 +135,17 @@ impl quote::ToTokens for SelectBuilder {
 
         let sorts_len = self.get_sort_fields().len();
 
+        let mut map_fn_impl = TokenStream::new();
+        // add map function
+
+        // TODO: add error handling
+        if let Some(_path) = &self.map {
+            map_fn_impl.extend(quote! {
+                // call map function
+                let _ = #_path(self)?;
+            });
+        }
+
         // iterate over fields
         for field in self.get_sort_fields() {
             let sort_ident = field.ident.as_ref().unwrap();
@@ -245,7 +256,11 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn to_sql<DB: Database>(&mut self) -> (String, Vec<()>) {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+
+                    // first validate
+                    #map_fn_impl
+
                     // prepare query
                     // first is base query which should be prepared in binary
                     // TODO: remove vector in favor of String builder.
@@ -273,7 +288,7 @@ impl quote::ToTokens for SelectBuilder {
 
                     let query = parts.join(" ");
 
-                    (query, values)
+                    Ok((query, values))
                 }
             }
 

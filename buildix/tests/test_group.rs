@@ -11,7 +11,7 @@ use sqlx::Postgres;
 #[test]
 fn test_group() {
     let mut query = GroupQueryBuilder::default();
-    let (q, _) = query.to_sql::<Postgres>();
+    let (q, _) = query.to_sql::<Postgres>().unwrap();
     assert_eq!(q, r#"SELECT id FROM user GROUP BY name, age, email"#);
 }
 

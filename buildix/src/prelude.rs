@@ -28,6 +28,7 @@ filter_impl!(i64);
 filter_impl!(&i64);
 filter_impl!(String);
 filter_impl!(&String);
+filter_impl!(&str);
 
 // implement filter for option
 impl<T> Filter for Option<T>
