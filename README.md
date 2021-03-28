@@ -160,20 +160,20 @@ tests directory [test_readme_select.rs](buildix/tests/test_readme_select.rs)
 
 First lets create default querybuilder.
 
-```
+```rust
     let mut qb = SelectUserBuilder::default();
     let (q, _) = query.to_sql::<Postgres>().unwrap();
 ```
 
 query is now
 
-```
+```sql
     SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC
 ```
 
 if we set inner filter value
 
-```
+```rust
     let mut qb = SelectUserBuilder::default();
     let (q, _) = query.to_sql::<Postgres>().unwrap();
     qb.filter.inner.value = Some(42);
@@ -182,7 +182,7 @@ if we set inner filter value
 
 now query is
 
-```
+```sql
     SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC
 ```
 
