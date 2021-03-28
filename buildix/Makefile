@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	cargo test test_map -- --nocapture
+	cargo t -- --nocapture
 
 .PHONY: expand
 expand:

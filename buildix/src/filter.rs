@@ -42,6 +42,7 @@ pub trait Nullable {}
 
 pub mod fields {
     use super::{Filter, FilterInfo, FilterResult};
+    use crate::filter::Nullable;
     use sqlx::Database;
 
     // IsNull field that transforms into ISNULL, NOT ISNULL
@@ -56,6 +57,8 @@ pub mod fields {
         }
     }
 
+    impl Nullable for IsNull {}
+
     // implement filter for isnull
     impl Filter for IsNull {
         fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
@@ -63,12 +66,12 @@ pub mod fields {
                 true => Some(FilterResult::new(
                     format!("{} ISNULL", info.ident),
                     vec![],
-                    0,
+                    1,
                 )),
                 false => Some(FilterResult::new(
                     format!("{} NOT ISNULL", info.ident),
                     vec![],
-                    0,
+                    1,
                 )),
             }
         }

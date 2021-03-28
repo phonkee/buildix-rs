@@ -10,9 +10,10 @@ use sqlx::Postgres;
 fn test_filter() {
     let mut query = FilterQuery::default();
     let (q, _v) = query.to_sql::<Postgres>().unwrap();
+
     assert_eq!(
         q,
-        r#"SELECT u.id FROM user AS u WHERE priority = ? AND age ISNULL"#
+        r#"SELECT u.id FROM user AS u WHERE (priority = ? AND age ISNULL)"#
     );
 
     query.filter.author_id = Some(2);
@@ -32,6 +33,7 @@ fn test_filter() {
 
     query.filter.something = Some(false.into());
     let (q, _v) = query.to_sql::<Postgres>().unwrap();
+
     assert_eq!(
         q,
         r#"SELECT u.id FROM user AS u WHERE (author_id = ? AND last_updated < ? AND priority = ? AND age ISNULL AND something NOT ISNULL)"#

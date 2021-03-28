@@ -108,14 +108,8 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 filter_info.counter += filter_result.values.len();
                 filter_values.extend(filter_result.values);
 
-                // check if we have results
-                if filter_result.count > 0 {
-                    if filter_result.count > 1 {
-                        filter_clauses.push(format!("({})", filter_result.clause).to_string());
-                    } else {
-                        filter_clauses.push(filter_result.clause.clone());
-                    }
-                }
+                // check if we have filters (count)
+                filter_clauses.push(filter_result.clause.clone());
             };
         });
     }
@@ -145,7 +139,13 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 } else {
                     // get size of values
                     let len = filter_values.len();
-                    Some(::buildix::filter::FilterResult::new(filter_clauses.join(#operator), filter_values, len))
+                    let mut clause = filter_clauses.join(#operator);
+
+                    if filter_clauses.len() > 1 {
+                        clause = format!("({})", clause);
+                    }
+
+                    Some(::buildix::filter::FilterResult::new(clause, filter_values, len))
                 }
             }
         }
