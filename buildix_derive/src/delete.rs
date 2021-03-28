@@ -85,7 +85,7 @@ impl Builder {
     }
 
     // write filter
-    pub fn write_filter(&self, _tokens: &mut TokenStream, _target_string: syn::Ident) {
+    pub fn write_filter(&self, _tokens: &mut TokenStream, _target_string: &syn::Ident) {
         // now write filter implementation
 
         // prepare fields
@@ -101,7 +101,7 @@ impl Builder {
     }
 
     // write limit
-    pub fn write_limit(&self, tokens: &mut TokenStream, target_string: syn::Ident) {
+    pub fn write_limit(&self, tokens: &mut TokenStream, target_string: &syn::Ident) {
         if let Some(field) = self.first_field(|x| x.limit) {
             let ident = field.ident.as_ref().unwrap();
 
@@ -110,6 +110,19 @@ impl Builder {
                     #target_string.push_str(" ");
                     #target_string.push_str(&clause);
                 }
+            });
+        }
+    }
+
+    // write map implementation
+    pub fn write_map(&self, tokens: &mut TokenStream) {
+        let ident = &self.ident;
+        if let Some(path) = &self.map {
+            tokens.extend(quote! {
+                let _fun: &dyn Fn(&mut #ident) -> buildix::Result<()> = &#path;
+
+                // call map function
+                let _ = #path(self)?;
             });
         }
     }
@@ -134,9 +147,16 @@ impl quote::ToTokens for Builder {
 
         let mut limit_impl = TokenStream::new();
 
+        // prepare query ident (string to append values)
+        let final_query_ident = syn::Ident::new("query", Span::call_site());
+
         // write filter now
-        self.write_filter(&mut target, syn::Ident::new("query", Span::call_site()));
-        self.write_limit(&mut limit_impl, syn::Ident::new("query", Span::call_site()));
+        self.write_filter(&mut target, &final_query_ident);
+        self.write_limit(&mut limit_impl, &final_query_ident);
+
+        // now do map implementation
+        let mut map_impl = TokenStream::new();
+        self.write_map(&mut map_impl);
 
         // extend tokens with additional implementations
         tokens.extend(quote! {
@@ -154,6 +174,8 @@ impl quote::ToTokens for Builder {
 
                 // generate sql along with arguments
                 fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+
+                    // check map now
 
                     // prepare query
                     let mut query: String = self.get_simple_query().to_owned();
