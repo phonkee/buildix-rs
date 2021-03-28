@@ -99,6 +99,20 @@ impl Builder {
         // process filter
         crate::filter::process::process(&self.ident, fields, " AND ".to_string(), _tokens)
     }
+
+    // write limit
+    pub fn write_limit(&self, tokens: &mut TokenStream, target_string: syn::Ident) {
+        if let Some(field) = self.first_field(|x| x.limit) {
+            let ident = field.ident.as_ref().unwrap();
+
+            tokens.extend(quote! {
+                if let Some(clause) = self.#ident.get_limit::<DB>() {
+                    #target_string.push_str(" ");
+                    #target_string.push_str(&clause);
+                }
+            });
+        }
+    }
 }
 
 // generate code for delete builder
@@ -118,8 +132,11 @@ impl quote::ToTokens for Builder {
             field.write_assertions(&mut target);
         }
 
+        let mut limit_impl = TokenStream::new();
+
         // write filter now
         self.write_filter(&mut target, syn::Ident::new("query", Span::call_site()));
+        self.write_limit(&mut limit_impl, syn::Ident::new("query", Span::call_site()));
 
         // extend tokens with additional implementations
         tokens.extend(quote! {
@@ -127,6 +144,7 @@ impl quote::ToTokens for Builder {
             use sqlx::Database;
             use static_assertions;
             use buildix::Filter as __Filter;
+            use buildix::limit::Limit as __Limit;
 
             // add all assertions for compiler
             #target
@@ -143,12 +161,12 @@ impl quote::ToTokens for Builder {
                     // now process filter
                     let fi = buildix::filter::FilterInfo::default();
                     if let Some(filter_result) = self.process_filter::<DB>(&fi) {
-                        query.push_str(" ");
+                        query.push_str(" WHERE ");
                         query.push_str(&filter_result.clause);
                     }
 
                     // now limit
-
+                    #limit_impl
 
                     Ok((query, vec![]))
                 }

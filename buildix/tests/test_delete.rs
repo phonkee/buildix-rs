@@ -13,7 +13,12 @@ use thiserror::Error;
 fn test_delete() {
     let mut query = TestDeleteBuilder::default();
     let (q, _) = query.to_sql::<Postgres>().unwrap();
-    println!("delete query: {}", q);
+    assert_eq!(q, "DELETE FROM user WHERE id = ?");
+
+    query.limit = Some(42);
+    let (q, _) = query.to_sql::<Postgres>().unwrap();
+
+    assert_eq!(q, "DELETE FROM user WHERE id = ? LIMIT 42");
 }
 
 #[derive(Default, DeleteBuilder)]
@@ -23,5 +28,5 @@ pub struct TestDeleteBuilder {
     id: i32,
 
     #[buildix(limit)]
-    limit: i32,
+    limit: Option<i32>,
 }
