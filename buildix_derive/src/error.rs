@@ -12,7 +12,7 @@ pub enum Error {
     MissingQuery,
 
     #[error("Please provide only single `{0}` field")]
-    Multiple(String),
+    MultipleFields(String),
 
     #[error("Invalid table definition: `{0}`")]
     InvalidTable(String),

@@ -70,28 +70,117 @@ impl Builder {
             abort!(invalid.ident, err);
         }
     }
+
+    // write_simple_query writes `get_simple_query` method
+    pub fn write_get_simple_query(&self, tokens: &mut TokenStream) {
+        let ident = &self.ident;
+        let simple_query = format!("DELETE FROM {}", self.table);
+        tokens.extend(quote! {
+            impl #ident {
+                fn get_simple_query(&self) -> &'static str {
+                    #simple_query
+                }
+            }
+        });
+    }
+
+    // write filter
+    pub fn write_filter(&self, _tokens: &mut TokenStream, _target_string: syn::Ident) {
+        // now write filter implementation
+
+        // prepare fields
+        let fields: Vec<crate::filter::process::Field> = self
+            .list_filter_fields()
+            .iter()
+            .map(|x| x.clone())
+            .map(|f| f.into())
+            .collect();
+
+        // process filter
+        crate::filter::process::process(&self.ident, fields, " AND ".to_string(), _tokens)
+    }
 }
 
-// validate delete builder
+// generate code for delete builder
+impl quote::ToTokens for Builder {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        // prepare ident
+        let ident = &self.ident;
+
+        // all assertions (fields and other)
+        let mut target = TokenStream::new();
+
+        // write `get_simple_query`
+        self.write_get_simple_query(&mut target);
+
+        // prepare all assertions
+        for field in self.filter_fields(|_| true) {
+            field.write_assertions(&mut target);
+        }
+
+        // write filter now
+        self.write_filter(&mut target, syn::Ident::new("query", Span::call_site()));
+
+        // extend tokens with additional implementations
+        tokens.extend(quote! {
+            use buildix::delete::DeleteBuilder as __DeleteBuilder;
+            use sqlx::Database;
+            use static_assertions;
+
+            // add all assertions for compiler
+            #target
+
+            // implement DeleteBuilder
+            impl ::buildix::DeleteBuilder for #ident {
+
+                // generate sql along with arguments
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+                    let query: String = self.get_simple_query().to_owned();
+
+                    // now process filter
+
+                    // now limit
+
+                    Ok((query, vec![]))
+                }
+            }
+        });
+    }
+}
+
+/// validate delete builder
+/// we need to be sure that following rules apply:
+///     * we have at least one filter field
+///     * we have at most one limit field
+///     * we have at most one count field
+///     * we have `table` set
 fn validate_builder(builder: Builder) -> Builder {
     let mut builder = builder;
     builder.table = builder.table.trim().clone().to_string();
 
+    // check if we have table set
     if builder.table.is_empty() {
         abort!(builder.ident, r#"Please provide `#[buildix(table=...)]`"#);
     }
 
-    if builder.list_filter_fields().is_empty() {
+    // check if we have filter field - good practice to be sure that we don't have wild builders
+    if builder.first_field(|x| x.filter).is_none() {
         abort!(
             builder.ident,
             r#"Please provide at least one `#[buildix(filter)]` field"#
         );
     }
 
-    // validate single limit
+    // validate if we have single limit
     builder.validate_single(
         |x| x.limit,
-        crate::error::Error::Multiple("#[buildix(limit)]".to_string()),
+        crate::error::Error::MultipleFields("#[buildix(limit)]".to_string()),
+    );
+
+    // validate if we have single limit
+    builder.validate_single(
+        |x| x.count,
+        crate::error::Error::MultipleFields("#[buildix(count)]".to_string()),
     );
 
     builder
@@ -116,6 +205,19 @@ pub struct BuilderField {
     limit: bool,
 }
 
+impl From<&BuilderField> for crate::filter::process::Field {
+    fn from(f: &BuilderField) -> Self {
+        Self {
+            ident: f.ident.as_ref().unwrap().clone(),
+            ty: f.ty.clone(),
+            expr: "".to_string(),
+            table: "".to_string(),
+            column: f.ident.as_ref().unwrap().to_string(),
+            isnull: false,
+        }
+    }
+}
+
 // validate_field validates single field
 fn validate_field(f: BuilderField) -> BuilderField {
     // let mut f = f;
@@ -128,23 +230,25 @@ fn validate_field(f: BuilderField) -> BuilderField {
     f
 }
 
-// generate code for delete builder
-impl quote::ToTokens for Builder {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let ident = &self.ident;
-        tokens.extend(quote! {
-            use buildix::delete::DeleteBuilder as __DeleteBuilder;
-            use sqlx::Database;
-
-
-            // implement DeleteBuilder
-            impl ::buildix::DeleteBuilder for #ident {
-
-                // generate sql along with arguments
-                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
-                    Ok(("DELETE FROM what WHERE 1 = 1".to_string(), vec![]))
-                }
-            }
-        });
+// implement delete builder field
+impl BuilderField {
+    // write assertions based on field
+    pub fn write_assertions(&self, tokens: &mut TokenStream) {
+        let ty = &self.ty;
+        if self.count {
+            tokens.extend(quote! {
+                static_assertions::assert_impl_all!(#ty: ::buildix::Count);
+            });
+        }
+        if self.limit {
+            tokens.extend(quote! {
+                static_assertions::assert_impl_all!(#ty: ::buildix::Limit);
+            });
+        }
+        if self.filter {
+            tokens.extend(quote! {
+                static_assertions::assert_impl_all!(#ty: ::buildix::Filter);
+            });
+        }
     }
 }

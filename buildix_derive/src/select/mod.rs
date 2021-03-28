@@ -330,20 +330,20 @@ pub fn validate(s: SelectBuilder) -> SelectBuilder {
     // check for duplicates
     s.validate_single(
         |f| f.select,
-        crate::Error::Multiple("#[buildix(query)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(query)]".to_string()),
     );
     s.validate_single(
         |f| f.offset,
-        crate::Error::Multiple("#[buildix(offset)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(offset)]".to_string()),
     );
     s.validate_single(
         |f| f.limit,
-        crate::Error::Multiple("#[buildix(limit)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(limit)]".to_string()),
     );
     // check for duplicate group
     s.validate_single(
         |f| f.group,
-        crate::Error::Multiple("#[buildix(group)]".to_string()),
+        crate::Error::MultipleFields("#[buildix(group)]".to_string()),
     );
 
     s

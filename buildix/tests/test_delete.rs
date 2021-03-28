@@ -10,9 +10,10 @@ use sqlx::Postgres;
 use thiserror::Error;
 
 #[test]
-fn test_map() {
+fn test_delete() {
     let mut query = TestDeleteBuilder::default();
-    assert!(query.to_sql::<Postgres>().is_err());
+    let (q, _) = query.to_sql::<Postgres>().unwrap();
+    println!("delete query: {}", q);
 }
 
 #[derive(Default, DeleteBuilder)]

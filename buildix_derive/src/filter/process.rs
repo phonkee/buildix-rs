@@ -5,12 +5,12 @@ use quote::quote;
 
 #[derive(Debug)]
 pub struct Field {
-    ident: syn::Ident,
-    ty: syn::Type,
-    expr: String,
-    table: String,
-    column: String,
-    isnull: bool,
+    pub ident: syn::Ident,
+    pub ty: syn::Type,
+    pub expr: String,
+    pub table: String,
+    pub column: String,
+    pub isnull: bool,
 }
 
 impl Field {
