@@ -7,6 +7,7 @@ use buildix_derive::{Filter, Select, SelectBuilder};
 #[allow(unused_imports)]
 use buildix::prelude::*;
 use sqlx::Postgres;
+use thiserror::Error;
 
 #[test]
 fn test_map() {
@@ -27,10 +28,16 @@ pub struct TestSelectBuilder {
     sort_age: buildix::sort::Sort,
 }
 
+#[derive(Debug, Error)]
+pub enum CustomError {
+    #[error("this is error")]
+    Error,
+}
+
 // map_select is called before execute, and when error is returned, it is returned back.
 // this is useful for various validations.
 pub fn map_select(_: &mut TestSelectBuilder) -> buildix::Result<()> {
-    Err(buildix::Error::Custom("error".to_string()))
+    Err(buildix::Error::Custom(Box::new(CustomError::Error)))
 }
 
 #[derive(Default, Select)]

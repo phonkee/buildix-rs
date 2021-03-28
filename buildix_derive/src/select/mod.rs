@@ -140,7 +140,7 @@ impl quote::ToTokens for SelectBuilder {
         // map function implementation
         let mut map_fn_impl = TokenStream::new();
 
-        // TODO: make better error handling
+        // TODO: make better error handling and better implementation possibly
         if let Some(_path) = &self.map {
             map_fn_impl.extend(quote! {
                 // call map function

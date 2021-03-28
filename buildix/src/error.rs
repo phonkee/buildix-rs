@@ -9,5 +9,5 @@ pub enum Error {
     Filter(String),
 
     #[error("custom error: `{0}`")]
-    Custom(String),
+    Custom(Box<dyn std::error::Error>),
 }
