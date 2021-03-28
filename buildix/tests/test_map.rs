@@ -37,7 +37,7 @@ pub enum CustomError {
 // map_select is called before execute, and when error is returned, it is returned back.
 // this is useful for various validations.
 pub fn map_select(_: &mut TestSelectBuilder) -> buildix::Result<()> {
-    Err(buildix::Error::Custom(Box::new(CustomError::Error)))
+    Err(buildix::Error::MapError(Box::new(CustomError::Error)))
 }
 
 #[derive(Default, Select)]

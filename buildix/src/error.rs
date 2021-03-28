@@ -8,6 +8,6 @@ pub enum Error {
     #[error("filter error: `{0}`")]
     Filter(String),
 
-    #[error("custom error: `{0}`")]
-    Custom(Box<dyn std::error::Error>),
+    #[error("map error: `{0}`")]
+    MapError(Box<dyn std::error::Error>),
 }
