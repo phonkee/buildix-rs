@@ -1,26 +1,38 @@
 # Buildix
 
-Query builder for sqlx. Buildix takes different approach to query building.
-Buildix provides a set of derive macros to define query builder structures.
+Declarative query builder for sqlx.  
+
+Buildix takes different approach to query building. Instead of defining
+queries inplace, buildix provides set of derive macros, that generate
+effective code for building and running sql queries.
 You can easily define query builders with large possibilities.
 Real power comes in filter, where you can define multiple filtering capabilities
-and then set only some filters. Buildix is aware of Option values and
-generates efficient code.
-Buildix shines when you have e.g. api that supports filtering by multiple
-fields. Usual query builders are defined where used, on the other hand
-when you define buildix builder once, you can use it multiple places.
+and then only set some filters needed.
+Buildix is aware of Option values and can omit values that are not set.
+This brings power to any apis that need to filter on multiple columns
+with ease.
 
-Please refer to example builder to see how buildix will work.
+Please refer to example select builder to see how buildix will work.
 
 ##### Warning
 
-This project is work in progress and is heavily developed. First implementation
-will implement "general" sql (POC), and then I will implement implementations
-for Postgres, MySQL, sqlite - databases that are supported in sqlx.
-This project is unusable in this phase and the api can change.
+This project is work in progress and is heavily developed.
+Currently buildix does not return any arguments, nor it's executing queries.
+I am working hard to bring all the functionalities, so please be kind to me.
+Design is kinda done, but there will be definitely some changes.
+Buildix currently generates some form of general sql for select and delete.
+Please stay tuned and star this repository.
+
+First implementation will implement "general" sql (POC), and then I will work on
+implementations  for Postgres, MySQL, sqlite - databases that are supported in sqlx.
+
+This project is currently unusable in this phase and the api can change.
 Do not hack buildix with implementing its traits, because that's internal
 functionality and will be subject to change.
+
 Only use derive macros to work with it.
+
+The vision is to bring at least basic power in span of next weeks.
 
 #### Features:
 
