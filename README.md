@@ -138,6 +138,9 @@ struct Filter {
     
     // Vec automatically converts to IN(...), if no value is available
     // this filter will not be available in where clause
+    // if you want to set expr. on this field, just provide single
+    // ? and buildix will expand it automatically
+    // if it's empty, it will not be shown in where clause
     id: Vec<i32>,
 }
 
