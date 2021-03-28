@@ -12,7 +12,6 @@ when you define buildix builder once, you can use it multiple places.
 
 Please refer to example builder to see how buildix will work.
 
-
 ##### Warning
 
 This project is work in progress and is heavily developed. First implementation
@@ -63,7 +62,7 @@ Features that I am working on (in order)
 # Example select query builder
 
 ```rust
-#[derive(SelectBuilder)]
+#[derive(Default, SelectBuilder)]
 struct SelectUserBuilder {
     #[buildix(select)]
     select: Vec<SelectUser>,
@@ -76,7 +75,7 @@ struct SelectUserBuilder {
 
     #[buildix(offset)]
     offset: i32,
-    
+
     #[buildix(sort = "name")]
     sort_name: Option<buildix::sort::Sort>,
 
@@ -87,7 +86,7 @@ struct SelectUserBuilder {
     count: i32,
 }
 
-#[derive(Select)]
+#[derive(Default, Select)]
 #[buildix(from(table(name = "user", alias = "u")))]
 #[buildix(from(join(name = "order", alias = "o", on = "o.user_id = u.id")))]
 #[buildix(group = "name", group = "email")]
@@ -103,7 +102,7 @@ struct SelectUser {
 
     #[buildix(expr = "IF(age > 18, true, false)")]
     is_adult: bool,
-    
+
     #[buildix(expr = r#"COALESCE(other, "")"#)]
     other: String,
 }
@@ -112,19 +111,19 @@ struct SelectUser {
 #[buildix(operator = "OR")]
 struct Filter {
     author_id: Option<i32>,
-    
+
     #[buildix(expr = "last_updated < ?")]
-    last_updated: Option<SystemTime>,
-    
+    last_updated: Option<i32>,
+
     // automatically provides filter = "priority = ?"
     priority: i32,
-    
+
     #[buildix(expr = "age > ?", isnull)]
     age: Option<i32>,
 
-    // inner filter will be sub clause in parentheses (if needed) 
+    // inner filter will be sub clause in parentheses (if needed)
     inner: InnerFilter,
-    
+
     // Vec automatically converts to IN(...), if no value is available
     // this filter will not be available in where clause
     id: Vec<i32>,
@@ -142,26 +141,50 @@ struct InnerFilter {
 
 # Filter
 
-The real power is in filter.
-You can provide multiple filters and buildix generates code for it.
-Filter is aware of Option values, when `None` they are not added to where clause.
-If you want work with `None` value you can set `#[buildix(isnull)]` and
-buildix will then generate `value ISNULL`.
-By combining multiple filters you can implement really powerful query builders.
+Buildix filter is powerful. Buildix helps you create filters that will be
+written to sql only if they are set, it supports null and more.
+It is very simple to filter by multiple filter values, and even embedded
+filters which translate into sub clauses. This gives you powerful tool
+for querying. After you define query once and verify query field names,
+you can reuse it safely.
 
-```rust
-let filter = Filter::default();
+Lets have a look at previous example how it actually translates to sql
+query.
 
-// WHERE clause is `WHERE priority = ?`
+Lets try to see what previous example looks like. You can see it in
+tests directory [test_readme_select.rs](buildix/tests/test_readme_select.rs)
 
-filter.author_id = Some(1)
 
-// now WHERE clause is now`WHERE author_id = ? OR priority = ?`
+First lets create default querybuilder.
 
 ```
+    let mut qb = SelectUserBuilder::default();
+    let (q, _) = query.to_sql::<Postgres>().unwrap();
+```
 
-Filter implementation can use `operator` either `OR` or `AND` and filter
-will generate appropriate where clauses.
+query is now
+
+```
+    SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL) GROUP BY name, email ORDER BY age ASC
+```
+
+if we set inner filter value
+
+```
+    let mut qb = SelectUserBuilder::default();
+    let (q, _) = query.to_sql::<Postgres>().unwrap();
+    qb.filter.inner.value = Some(42);
+    qb.filter.inner.value2 = Some(314);
+```
+
+now query is
+
+```
+    SELECT u.name, u.email, u.age, IF(age > 18, true, false) AS is_adult, COALESCE(other, "") AS other FROM user AS u, INNER JOIN order o (o.user_id = u.id) WHERE (priority = ? OR age ISNULL OR (value = ? AND value2 = ?)) GROUP BY name, email ORDER BY age ASC
+```
+
+You can see how powerful this filtering is. Not to say that there is more
+functionality that helps you to build reliable query builders.
 
 
 # Execute

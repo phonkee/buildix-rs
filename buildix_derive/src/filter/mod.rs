@@ -36,6 +36,14 @@ pub struct Filter {
     map: Option<syn::Path>,
 }
 
+// validate filter
+pub fn validate_filter(f: Filter) -> Filter {
+    // validate operator first
+    // TODO: validate operator and other
+
+    f
+}
+
 #[derive(Debug, FromMeta, PartialEq, Eq)]
 struct Operator(String);
 
@@ -45,6 +53,7 @@ impl Default for Operator {
     }
 }
 
+// Write filter
 impl quote::ToTokens for Filter {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let fields: Vec<process::Field> = self
@@ -60,18 +69,15 @@ impl quote::ToTokens for Filter {
 
         // first do some compile time assertions
         for field in self.data.as_ref().take_struct().unwrap().fields {
-            field.to_tokens(tokens);
+            // write tokens
+            tokens.extend(quote! {
+                #field
+            });
         }
 
         // process
         process::process(&self.ident, fields, self.operator.0.clone(), tokens);
     }
-}
-
-// validate filter
-pub fn validate_filter(f: Filter) -> Filter {
-    // validate operator first
-    f
 }
 
 #[derive(Debug, FromField)]
@@ -103,6 +109,8 @@ impl quote::ToTokens for Field {
     // TODO: assertions
     fn to_tokens(&self, _tokens: &mut TokenStream) {
         // now abort when anything is wrong
+
+        if self.isnull {}
 
         // abort!(self.ident, "error");
     }
