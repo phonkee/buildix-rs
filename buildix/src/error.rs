@@ -7,4 +7,7 @@ pub enum Error {
 
     #[error("map error: `{0}`")]
     MapError(Box<dyn std::error::Error>),
+
+    #[error("filter error: `{0}`")]
+    FilterError(Box<dyn std::error::Error>),
 }
