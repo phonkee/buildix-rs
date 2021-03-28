@@ -133,9 +133,6 @@ struct Filter {
     #[buildix(expr = "age > ?", isnull)]
     age: Option<i32>,
 
-    // inner filter will be sub clause in parentheses (if needed)
-    inner: InnerFilter,
-
     // inner filter will be sub clause in parentheses (if needed) 
     inner: InnerFilter,
     
