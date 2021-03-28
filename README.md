@@ -206,14 +206,15 @@ functionality that helps you to build reliable query builders.
 
 # Execute
 
-When Buildix executes query, it will fill the values directly on the structure,
-that's why you need to always work with builders as `&mut`.
-That's real power since you don't need to see underlying implementation
-you will only get results directly instantiated as you provided.
+Buildix will provide method to execute given query builder, and it detects
+whether you want to query single record or multiple records, and it will
+set results on query builder instance. If you provide `#[buildix(count)]`
+it will also run count queries (for select queries) or in case of update/insert/delete
+queries affected rows count. If you do not provide it, the code will not be generated
+hence it will be faster.
 
-Buildix will support selecting single instance or vec, and in future also
-Stream.
-
+In the future buildix will also support stream of records, but that's currently
+not a priority.
 
 # Delete query builder
 
