@@ -224,7 +224,7 @@ struct UserInsertBuilder {
 }
 
 #[derive(Insert)]
-#[buildix(table = "user", key = "id")]
+#[buildix(table = "user", unique_key = "id")]
 struct InsertUser {
     #[buildix(update)]
     name: String,
@@ -234,6 +234,7 @@ struct InsertUser {
 
     #[buildix(update)]
     age: Option<i64>,
+    
     // #[buildix(returning)]
     // id: i32,
 }
@@ -259,6 +260,11 @@ struct UpdateUser {
     age: Option<i64>,
     
     #[buildix(filter)]
+    filter: UpdateFilter,
+}
+
+#[derive(Default, Filter)]
+pub struct UpdateFilter {
     id: i32,
 }
 
