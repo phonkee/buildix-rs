@@ -126,6 +126,7 @@ impl quote::ToTokens for Builder {
             use buildix::delete::DeleteBuilder as __DeleteBuilder;
             use sqlx::Database;
             use static_assertions;
+            use buildix::Filter as __Filter;
 
             // add all assertions for compiler
             #target
@@ -135,11 +136,19 @@ impl quote::ToTokens for Builder {
 
                 // generate sql along with arguments
                 fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
-                    let query: String = self.get_simple_query().to_owned();
+
+                    // prepare query
+                    let mut query: String = self.get_simple_query().to_owned();
 
                     // now process filter
+                    let fi = buildix::filter::FilterInfo::default();
+                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
+                        query.push_str(" ");
+                        query.push_str(&filter_result.clause);
+                    }
 
                     // now limit
+
 
                     Ok((query, vec![]))
                 }
