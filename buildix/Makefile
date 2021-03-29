@@ -1,7 +1,7 @@
 .PHONY: test
 test:
-	cargo t test_readme_select -- --nocapture
+	cargo t test_filter -- --nocapture
 
 .PHONY: expand
 expand:
-	cargo expand --test test_readme_select
+	cargo expand --test test_filter

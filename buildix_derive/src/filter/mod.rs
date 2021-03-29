@@ -39,11 +39,10 @@ pub struct Filter {
 // validate filter
 pub fn validate_filter(f: Filter) -> Filter {
     // validate operator first
-    // TODO: validate operator and other
-    let oper = f.operator.0.trim().to_lowercase();
+    let operator = f.operator.0.trim().to_lowercase();
 
     // check operator
-    match oper.as_str() {
+    match operator.as_str() {
         "and" => {}
         "or" => {}
         x => {
@@ -84,6 +83,8 @@ impl quote::ToTokens for Filter {
                 #field
             });
         }
+
+        // add map
 
         // process
         process::process(&self.ident, fields, self.operator.0.clone(), tokens);

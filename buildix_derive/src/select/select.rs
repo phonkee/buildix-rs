@@ -229,9 +229,9 @@ impl quote::ToTokens for Select {
 
         _tokens.extend(quote! {
             #[allow(unused_imports)]
-            use buildix::Select as __Select;
-            use sqlx::postgres::Postgres as __Postgres;
-            use sqlx::database::Database as __Database;
+            use buildix::Select as _;
+            use sqlx::postgres::Postgres as _;
+            use sqlx::database::Database as _;
 
             // implement query first
             impl ::buildix::Select for #ident {

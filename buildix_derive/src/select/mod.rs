@@ -241,11 +241,11 @@ impl quote::ToTokens for SelectBuilder {
         // generate traits for select
         _tokens.extend(quote! {
             #[allow(unused_imports)]
-            use buildix::SelectBuilder as __SelectBuilder;
-            use buildix::sort::Sort as __Sort;
-            use buildix::offset::Offset as __Offset;
-            use buildix::limit::Limit as __Limit;
-            use buildix::filter::Filter as __Filter;
+            use buildix::SelectBuilder as _;
+            use buildix::sort::Sort as _;
+            use buildix::offset::Offset as _;
+            use buildix::limit::Limit as _;
+            use buildix::filter::Filter as _;
             use buildix::prelude::*;
             use sqlx::database::Database;
             use static_assertions;
