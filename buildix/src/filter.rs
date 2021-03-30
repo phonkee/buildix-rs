@@ -6,15 +6,15 @@ use sqlx::{Database, Type};
 
 // FilterResult returns sql clause as well as values assigned.
 #[derive(Default)]
-pub struct FilterResult {
+pub struct FilterResult<T: Type<dyn Database>> {
     pub clause: String,
-    pub values: Vec<()>,
+    pub values: Vec<T>,
     pub count: usize,
 }
 
 // FilterResult implementation
-impl FilterResult {
-    pub fn new(clause: String, values: Vec<()>, count: usize) -> Self {
+impl<T> FilterResult<T> {
+    pub fn new(clause: String, values: Vec<T>, count: usize) -> Self {
         Self {
             clause: clause.trim().to_owned(),
             values,
@@ -34,7 +34,8 @@ pub struct FilterInfo<'a> {
 
 // Filter trait
 pub trait Filter {
-    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult>;
+    // process_filter returns where clause and values and other info
+    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>>;
 }
 
 // Nullable is marker trait for fields that support `isnull`
@@ -61,7 +62,7 @@ pub mod fields {
 
     // implement filter for isnull
     impl Filter for IsNull {
-        fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
+        fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>> {
             match self.0 {
                 true => Some(FilterResult::new(
                     format!("{} ISNULL", info.ident),
