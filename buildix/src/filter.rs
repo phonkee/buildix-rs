@@ -2,22 +2,24 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use sqlx::{Database, Type};
+use sqlx::query::QueryAs;
+use sqlx::{Database, Encode, Type};
 
 // FilterResult returns sql clause as well as values assigned.
 #[derive(Default)]
-pub struct FilterResult<T: Type<dyn Database>> {
+pub struct FilterResult
+where
+    T: Database,
+{
     pub clause: String,
-    pub values: Vec<T>,
     pub count: usize,
 }
 
 // FilterResult implementation
-impl<T> FilterResult<T> {
-    pub fn new(clause: String, values: Vec<T>, count: usize) -> Self {
+impl FilterResult {
+    pub fn new(clause: String, count: usize) -> Self {
         Self {
             clause: clause.trim().to_owned(),
-            values,
             count,
         }
     }
@@ -34,8 +36,13 @@ pub struct FilterInfo<'a> {
 
 // Filter trait
 pub trait Filter {
-    // process_filter returns where clause and values and other info
-    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>>;
+    // filter_query returns clause if available
+    fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String>;
+
+    // filter arguments
+    fn filter_arguments<DB, O>(&self, query: QueryAs<DB, O, true>)
+    where
+        DB: Database;
 }
 
 // Nullable is marker trait for fields that support `isnull`
@@ -44,7 +51,8 @@ pub trait Nullable {}
 pub mod fields {
     use super::{Filter, FilterInfo, FilterResult};
     use crate::filter::Nullable;
-    use sqlx::Database;
+    use sqlx::query::QueryAs;
+    use sqlx::{Database, IntoArguments};
 
     // IsNull field that transforms into ISNULL, NOT ISNULL
     // also works with Option seamlessly (as usual)
@@ -62,19 +70,20 @@ pub mod fields {
 
     // implement filter for isnull
     impl Filter for IsNull {
-        fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>> {
+        fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String> {
             match self.0 {
-                true => Some(FilterResult::new(
-                    format!("{} ISNULL", info.ident),
-                    vec![],
-                    1,
-                )),
-                false => Some(FilterResult::new(
-                    format!("{} NOT ISNULL", info.ident),
-                    vec![],
-                    1,
-                )),
+                true => Some(format!("{} ISNULL", info.ident)),
+                false => Some(format!("{} NOT ISNULL", info.ident)),
             }
+        }
+
+        fn filter_arguments<DB, O>(&self, query: QueryAs<DB, O, A>)
+        where
+            DB: Database,
+            O: for<'r> sqlx::FromRow<'r, <DB as Database>::Row>,
+            A: IntoArguments<DB>,
+        {
+            // no-op
         }
     }
 }

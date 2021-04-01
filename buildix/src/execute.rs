@@ -6,7 +6,7 @@ use sqlx::Error;
 use sqlx::Pool;
 
 #[async_trait]
-pub trait Execute {
+pub trait SelectExecutor {
     // perform query
     async fn execute<DB: Database, T>(&mut self, pool: Pool<DB>) -> Result<(), T>
     where

@@ -126,8 +126,8 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
         // filter implementation
         impl ::buildix::filter::Filter for #ident {
 
-            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult> {
-                let mut filter_values: Vec<()> = vec![];
+            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult<DB>> {
+                let mut filter_values: Vec<DB> = vec![];
                 let mut filter_clauses: Vec<String> = vec![];
                 let mut filter_info = ::buildix::filter::FilterInfo::default();
 

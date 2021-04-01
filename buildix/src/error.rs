@@ -1,4 +1,6 @@
 use thiserror::Error;
+
+#[cfg(grpc)]
 use tonic::Code;
 
 #[derive(Debug, Error)]

@@ -295,6 +295,20 @@ impl quote::ToTokens for SelectBuilder {
                 }
             }
 
+            // use buildix::execute::SelectExecutor as _;
+            // use sqlx::Database as _;
+            // 
+            // impl ::buildix::execute::SelectExecutor for #ident {
+            // 
+            //     /// prepare execute 
+            //     fn execute<DB: Database, T>(&mut self, pool: Pool<DB>) -> std::future::Future<Result<(), T>>
+            //     where
+            //         T: Into<crate::error::Error> {
+            //         Ok(())
+            //     }
+            // }
+
+
             // assert that everything is fine
             static_assertions::assert_impl_all!(#select_field_type: ::buildix::Select);
         })

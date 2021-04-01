@@ -11,12 +11,12 @@ use sqlx::database::Database;
 macro_rules! filter_impl {
     {$A:ty} => {
         impl Filter for $A {
-            fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult> {
+            fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult<DB>> {
                 // now we are not none
                 if let Some(expr) = &fi.expr {
-                    Some(FilterResult::new(expr.clone(), vec![()], 1))
+                    Some(FilterResult::new(expr.clone(), vec![], 1))
                 } else {
-                    Some(FilterResult::new(format!("{} = ?", fi.ident), vec![()], 1))
+                    Some(FilterResult::new(format!("{} = ?", fi.ident), vec![], 1))
                 }
             }
         }
@@ -36,7 +36,7 @@ impl<T> Filter for Option<T>
 where
     T: Filter,
 {
-    fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult> {
+    fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult<DB>> {
         match self {
             None => {
                 if fi.isnull {
@@ -62,7 +62,7 @@ impl<T> Filter for Vec<T>
 where
     T: Filter,
 {
-    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult> {
+    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>> {
         let len = self.len();
         if len == 0 {
             None
@@ -70,7 +70,7 @@ where
             let placeholders: Vec<String> = [0..len].iter().map(|_| "?".to_string()).collect();
             Some(FilterResult::new(
                 format!("{} IN ({})", info.ident, placeholders.join(", ")),
-                vec![(); len],
+                Vec::with_capacity(len),
                 len,
             ))
         }
