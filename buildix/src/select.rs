@@ -16,7 +16,7 @@ use sqlx::{Error, IntoArguments};
 // select query implementation
 pub trait SelectBuilder {
     // returns query
-    fn to_sql<DB: Database>(&mut self) -> crate::Result<String>;
+    fn to_sql<DB: Database>(&mut self) -> crate::Result<(String, Vec<()>)>;
     fn bind_values<'q, DB, O, T>(&mut self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
     where
         DB: Database,

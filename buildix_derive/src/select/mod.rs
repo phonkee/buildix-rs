@@ -261,7 +261,7 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn to_sql<DB: Database>(&mut self) -> buildix::Result<String> {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
 
                     // first run map function (if available)
                     #map_fn_impl
@@ -286,7 +286,7 @@ impl quote::ToTokens for SelectBuilder {
 
                     #limit_offset_clause
 
-                    Ok(parts.join(" "))
+                    Ok((parts.join(" "), vec![]))
                 }
 
                 // bind all values
@@ -297,21 +297,18 @@ impl quote::ToTokens for SelectBuilder {
                 {
                     query
                 }
+
             }
 
-            // use buildix::execute::SelectExecutor as _;
-            // use sqlx::Database as _;
-            // 
-            // impl ::buildix::execute::SelectExecutor for #ident {
-            // 
-            //     /// prepare execute 
-            //     fn execute<DB: Database, T>(&mut self, pool: Pool<DB>) -> std::future::Future<Result<(), T>>
-            //     where
-            //         T: Into<crate::error::Error> {
-            //         Ok(())
-            //     }
-            // }
+            use buildix::execute::SelectExecutor as _;
 
+            #[async_trait::async_trait]
+            impl ::buildix::execute::SelectExecutor for #ident {
+                /// prepare execute method
+                async fn execute<DB: Database>(&mut self, pool: sqlx::Pool<DB>) -> Result<(), buildix::Error> {
+                    Ok(())
+                }
+            }
 
             // assert that everything is fine
             static_assertions::assert_impl_all!(#select_field_type: ::buildix::Select);

@@ -146,13 +146,12 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 }
             }
 
-            // filter arguments
-            fn filter_arguments<'q, DB, O, T>(&self, query: ::sqlx::query::QueryAs<'q, DB, O, T>) -> ::sqlx::query::QueryAs<'q, DB, O, T>
-            where
-                DB: Database,
-                T: ::sqlx::IntoArguments<'q, DB>,
+            // bind all values
+            fn bind_values<'q, DB, O, T>(&self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
+                where
+                    DB: sqlx::Database,
+                    T: sqlx::IntoArguments<'q, DB>,
             {
-                println!("filter_arguments");
                 query
             }
         }
