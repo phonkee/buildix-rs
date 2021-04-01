@@ -50,7 +50,7 @@ pub fn derive_select(input: TokenStream) -> TokenStream {
 pub fn derive_select_builder(input: TokenStream) -> TokenStream {
     let mut input: syn::DeriveInput = syn::parse_macro_input!(input);
 
-    // add derive from sqlx::FromRow
+    // add derive from sqlx::FromRow (TODO: this is not working currently)
     let derives = syn::parse_quote!(sqlx::FromRow);
     input.append_derives(derives);
 
@@ -59,6 +59,10 @@ pub fn derive_select_builder(input: TokenStream) -> TokenStream {
 
     // prepare new tokens
     let mut toks = proc_macro2::TokenStream::new();
-    toks.extend(quote! {#sel});
+
+    toks.extend(quote! {
+        #sel
+    });
+
     toks.into()
 }

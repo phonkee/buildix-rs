@@ -34,6 +34,10 @@ pub trait Select {
     fn get_table<DB: Database>(&self) -> &'static str;
     fn get_query<DB: Database>(&self) -> &'static str;
     fn get_group<DB: Database>(&mut self) -> Option<&'static str>;
+    // fn new_query<'r, DB>(&mut self, q: String) -> QueryAs<'r, D>
+    // where
+    //     DB: Database,
+    //     O: sqlx::FromRow<'r, DB::Row>;
 }
 
 // implement Query for Vec<Query>
@@ -58,4 +62,10 @@ where
     fn get_group<DB: Database>(&mut self) -> Option<&'static str> {
         T::default().get_group::<DB>()
     }
+    // fn new_query<'r, DB>(&mut self, q: String) -> QueryAs<'r, DB, _, _>
+    // where
+    //     DB: Database,
+    // {
+    //     query_as::<_, T>(&q)
+    // }
 }

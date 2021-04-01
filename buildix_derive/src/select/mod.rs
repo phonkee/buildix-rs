@@ -10,7 +10,7 @@ pub use select::Select;
 use darling::{self, ast, util, FromDeriveInput, FromField, FromMeta, FromVariant};
 use proc_macro2::{Span, TokenStream};
 use proc_macro_error::*;
-use proc_macro_roids::DeriveInputNewtypeExt;
+use proc_macro_roids::{DeriveInputNewtypeExt, IdentExt};
 use quote::quote;
 use std::fmt::{Debug, Formatter};
 

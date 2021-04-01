@@ -106,6 +106,7 @@ struct InnerFilter {
 
 #[derive(Default, Select)]
 #[buildix(from(table(name = "user", alias = "u")))]
+#[derive(sqlx::FromRow)]
 struct SelectUser {
     #[buildix(table = "u")]
     id: i32,
