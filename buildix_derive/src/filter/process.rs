@@ -115,6 +115,9 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
     // generate filter stuff
     tokens.extend(quote! {
         use buildix::prelude::*;
+        use sqlx::Database as _;
+        use sqlx::query::QueryAs as _;
+        use sqlx::IntoArguments as _;
 
         // field assertions first
         #field_asserts
@@ -143,15 +146,15 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 }
             }
 
-            // // add arguments to query
-            // fn filter_arguments<'q, DB: Databases, O, T>(&self, _query: &mut QueryAs<'q, DB, O, T>)
-            // where
-            //     DB: Database,
-            //     T: IntoArguments<DB>,
-            // {
-            //     _query
-            // }
-
+            // filter arguments
+            fn filter_arguments<'q, DB, O, T>(&self, query: ::sqlx::query::QueryAs<'q, DB, O, T>) -> ::sqlx::query::QueryAs<'q, DB, O, T>
+            where
+                DB: Database,
+                T: ::sqlx::IntoArguments<'q, DB>,
+            {
+                println!("filter_arguments");
+                query
+            }
         }
     });
 }

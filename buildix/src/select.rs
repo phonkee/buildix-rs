@@ -9,13 +9,18 @@ use sqlx::postgres::Postgres;
 #[cfg(feature = "mysql")]
 use sqlx::mysql::MySql;
 
-use sqlx::Error;
+use sqlx::query::QueryAs;
 use sqlx::Pool;
+use sqlx::{Error, IntoArguments};
 
 // select query implementation
 pub trait SelectBuilder {
     // returns query
     fn to_sql<DB: Database>(&mut self) -> crate::Result<String>;
+    fn bind_values<'q, DB, O, T>(&mut self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+    where
+        DB: Database,
+        T: IntoArguments<'q, DB>;
 }
 
 // Query trait

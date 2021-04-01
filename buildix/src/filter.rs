@@ -10,11 +10,14 @@ pub trait Filter {
     // filter_query returns clause if available
     fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String>;
 
-    // // filter arguments
-    // fn filter_arguments<'q, DB, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
-    // where
-    //     DB: Database,
-    //     T: IntoArguments<'q, DB>;
+    // filter arguments
+    fn filter_arguments<'q, DB, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+    where
+        DB: Database,
+        T: IntoArguments<'q, DB>,
+    {
+        query
+    }
 }
 
 // FilterInfo is passed into filter

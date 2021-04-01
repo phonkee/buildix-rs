@@ -248,6 +248,8 @@ impl quote::ToTokens for SelectBuilder {
             use buildix::filter::Filter as __Filter;
             use buildix::prelude::*;
             use sqlx::database::Database;
+            use sqlx::IntoArguments as _;
+            use sqlx::query::QueryAs as _;
             use static_assertions;
 
             #asserts
@@ -285,6 +287,15 @@ impl quote::ToTokens for SelectBuilder {
                     #limit_offset_clause
 
                     Ok(parts.join(" "))
+                }
+
+                // bind all values
+                fn bind_values<'q, DB, O, T>(&mut self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
+                    where
+                        DB: sqlx::Database,
+                        T: sqlx::IntoArguments<'q, DB>,
+                {
+                    query
                 }
             }
 
