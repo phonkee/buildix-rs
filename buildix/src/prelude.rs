@@ -24,15 +24,15 @@ macro_rules! filter_impl {
                 }
             }
 
-            // add arguments to query
-            fn filter_arguments<'q, DB: Database, O, T>(&self, query: QueryAs<DB, O, T>) -> QueryAs<DB, O, T>
-            where
-                DB: Database,
-                T: IntoArguments<'q, DB>,
-            {
-                let mut query = query;
-                query.bind(self)
-            }
+            // // add arguments to query
+            // fn filter_arguments<'q, DB: Database, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+            // where
+            //     DB: Database,
+            //     T: IntoArguments<'q, DB>,
+            // {
+            //     let mut query = query;
+            //     query.bind(self)
+            // }
 
         }
     };
@@ -60,20 +60,20 @@ where
                     None
                 }
             }
-            Some(val) => val.process_filter::<DB>(fi),
+            Some(val) => val.filter_query::<DB>(fi),
         }
     }
 
-    fn filter_arguments<'q, DB: Database, O, V>(
-        &self,
-        query: QueryAs<DB, O, V>,
-    ) -> QueryAs<DB, O, V>
-    where
-        DB: Database,
-        V: IntoArguments<'q, DB>,
-    {
-        query
-    }
+    // fn filter_arguments<'q, DB: Database, O, V>(
+    //     &self,
+    //     query: QueryAs<'q, DB, O, V>,
+    // ) -> QueryAs<'q, DB, O, V>
+    // where
+    //     DB: Database,
+    //     V: IntoArguments<'q, DB>,
+    // {
+    //     query
+    // }
 }
 
 // Option is nullable
@@ -94,18 +94,18 @@ where
         }
     }
 
-    fn filter_arguments<'q, DB, O, V>(&self, query: QueryAs<DB, O, V>) -> QueryAs<DB, O, V>
-    where
-        DB: Database,
-        V: IntoArguments<'q, DB>,
-    {
-        let mut query = query;
-
-        // apply values
-        for value in self {
-            query = query.bind()
-        }
-
-        query
-    }
+    // fn filter_arguments<'q, DB, O, V>(&self, query: QueryAs<DB, O, V>) -> QueryAs<'q, DB, O, V>
+    // where
+    //     DB: Database,
+    //     V: IntoArguments<'q, DB>,
+    // {
+    //     let mut query = query;
+    //
+    //     // apply values
+    //     for value in self {
+    //         query = query.bind()
+    //     }
+    //
+    //     query
+    // }
 }

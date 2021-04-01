@@ -259,7 +259,7 @@ impl quote::ToTokens for SelectBuilder {
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
                 // get_query returns query string
-                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<String> {
 
                     // first run map function (if available)
                     #map_fn_impl
@@ -269,15 +269,10 @@ impl quote::ToTokens for SelectBuilder {
                     // TODO: remove vector in favor of String builder.
                     let mut parts: Vec<String> = vec![self.#select_field_ident.get_query::<DB>().to_string()];
 
-                    // now
-                    let values: Vec<()> = vec![];
-
                     // filter builder, start with basic filter_info
                     let fi = buildix::filter::FilterInfo::default();
-                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
-                        if !filter_result.clause.is_empty() {
-                            parts.push(format!("WHERE {}", filter_result.clause).to_string());
-                        }
+                    if let Some(filter_clause) = self.filter_query::<DB>(&fi) {
+                        parts.push(format!("WHERE {}", filter_clause).to_string());
                     }
 
                     // GROUP BY
@@ -289,9 +284,7 @@ impl quote::ToTokens for SelectBuilder {
 
                     #limit_offset_clause
 
-                    let query = parts.join(" ");
-
-                    Ok((query, values))
+                    Ok(parts.join(" "))
                 }
             }
 

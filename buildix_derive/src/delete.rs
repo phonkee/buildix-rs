@@ -182,9 +182,9 @@ impl quote::ToTokens for Builder {
 
                     // now process filter
                     let fi = buildix::filter::FilterInfo::default();
-                    if let Some(filter_result) = self.process_filter::<DB>(&fi) {
-                        query.push_str(" WHERE ");
-                        query.push_str(&filter_result.clause);
+                    if let Some(_filter_result) = self.filter_query::<DB>(&fi) {
+                        // query.push_str(" WHERE ");
+                        // query.push_str(&filter_result.clause);
                     }
 
                     // now limit
