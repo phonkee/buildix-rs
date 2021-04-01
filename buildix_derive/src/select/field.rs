@@ -57,11 +57,16 @@ impl Field {
         Ok(())
     }
 
-    pub fn is_vector(&self) -> bool {
+    pub fn select_is_vec(&self) -> bool {
         false
+        // if let syn::Type::Path(ref p) = self.ty {
+        //     p.path.is_ident("Vec")
+        // } else {
+        //     false
+        // }
     }
 
-    pub fn get_inner_type(&self) -> proc_macro2::Ident {
+    pub fn select_get_inner_type(&self) -> proc_macro2::Ident {
         println!("{:?}", self.ty);
         format_ident!("hop")
     }

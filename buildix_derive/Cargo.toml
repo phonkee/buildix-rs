@@ -21,7 +21,7 @@ proc_macro_roids = "0.7"
 quote = "1"
 static_assertions = "1"
 sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
-syn = "1"
+syn = { version = "1", features = ["full"] }
 thiserror = "1"
 tonic = { version = "0.4", optional = true }
 

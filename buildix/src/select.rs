@@ -10,7 +10,7 @@ use sqlx::postgres::Postgres;
 use sqlx::mysql::MySql;
 
 use sqlx::query::QueryAs;
-use sqlx::{Error, IntoArguments};
+use sqlx::{query_as, Error, IntoArguments};
 use sqlx::{FromRow, Pool};
 
 // select query implementation
@@ -34,15 +34,6 @@ pub trait Select {
     fn get_table<DB: Database>(&self) -> &'static str;
     fn get_query<DB: Database>(&self) -> &'static str;
     fn get_group<DB: Database>(&mut self) -> Option<&'static str>;
-
-    // instantiate new query
-    fn new_query<'q, DB, O, T>(query: String) -> QueryAs<'q, DB, O, T>
-    where
-        DB: sqlx::Database,
-        T: sqlx::IntoArguments<'q, DB>,
-    {
-        sqlx::query_as::<_, Self>(&query)
-    }
 }
 
 // implement Query for Vec<Query>
@@ -66,12 +57,5 @@ where
     }
     fn get_group<DB: Database>(&mut self) -> Option<&'static str> {
         T::default().get_group::<DB>()
-    }
-    fn new_query<'q, DB, O, A>(query: String) -> QueryAs<'q, DB, O, A>
-    where
-        DB: sqlx::Database,
-        A: sqlx::IntoArguments<'q, DB>,
-    {
-        sqlx::query_as::<_, T>(&query)
     }
 }

@@ -240,8 +240,8 @@ impl quote::ToTokens for SelectBuilder {
         );
 
         // get inner type
-        let inner_type = &self.get_select_field().get_inner_type();
-        println!("inner type: {}", inner_type);
+        let inner_type = &self.get_select_field().select_is_vec();
+        println!("is vec: {}", inner_type);
 
         // generate traits for select
         _tokens.extend(quote! {
