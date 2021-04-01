@@ -10,6 +10,7 @@ pub use select::Select;
 use darling::{self, ast, util, FromDeriveInput, FromField, FromMeta, FromVariant};
 use proc_macro2::{Span, TokenStream};
 use proc_macro_error::*;
+use proc_macro_roids::DeriveInputNewtypeExt;
 use quote::quote;
 use std::fmt::{Debug, Formatter};
 
@@ -238,6 +239,10 @@ impl quote::ToTokens for SelectBuilder {
             &mut filter_tokens,
         );
 
+        // get inner type
+        let inner_type = &self.get_select_field().get_inner_type();
+        println!("inner type: {}", inner_type);
+
         // generate traits for select
         _tokens.extend(quote! {
             #[allow(unused_imports)]
@@ -260,6 +265,8 @@ impl quote::ToTokens for SelectBuilder {
 
             // implement Select
             impl ::buildix::SelectBuilder for #ident {
+
+
                 // get_query returns query string
                 fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
 
@@ -289,15 +296,17 @@ impl quote::ToTokens for SelectBuilder {
                     Ok((parts.join(" "), vec![]))
                 }
 
-                // bind all values
-                fn bind_values<'q, DB, O, T>(&mut self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
-                    where
-                        DB: sqlx::Database,
-                        T: sqlx::IntoArguments<'q, DB>,
-                {
+                #[allow(late_bound_lifetime_arguments)]
+                fn prepare_values<'q, DB, O, T>(&mut self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
+                where
+                    DB: Database,
+                    T: sqlx::IntoArguments<'q, DB> {
+                    let mut query = query;
+
+                    // self.bind_values(query)
+
                     query
                 }
-
             }
 
             use buildix::execute::SelectExecutor as _;
@@ -306,6 +315,10 @@ impl quote::ToTokens for SelectBuilder {
             impl ::buildix::execute::SelectExecutor for #ident {
                 /// prepare execute method
                 async fn execute<DB: Database>(&mut self, pool: sqlx::Pool<DB>) -> Result<(), buildix::Error> {
+                    let q = self.to_sql::<DB>()?;
+
+
+                    println!("this is query for execute: {:?}", q);
                     Ok(())
                 }
             }

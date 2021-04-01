@@ -15,6 +15,7 @@ sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
 static_assertions = "1"
 thiserror = "1"
 tonic = { version = "0.4", optional = true }
+tokio-test = "0.4"
 
 [features]
 postgres = ["buildix_derive/postgres", "sqlx/postgres"]
@@ -22,6 +23,7 @@ mysql = ["buildix_derive/mysql", "sqlx/mysql"]
 sqlite = ["buildix_derive/sqlite", "sqlx/sqlite"]
 mssql = ["buildix_derive/mssql", "sqlx/mssql"]
 grpc = ["buildix_derive/grpc", "tonic"]
+
 
 [dev-dependencies]
 buildix_derive = { path = "../buildix_derive" }

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_macros)]
 #![allow(unused_imports)]
-
+#[allow(late_bound_lifetime_arguments)]
 use sqlx::query::QueryAs;
 use sqlx::{Database, Encode, IntoArguments, Type};
 
@@ -61,15 +61,13 @@ pub mod fields {
             }
         }
 
-        // fn filter_arguments<'q, DB, O, A>(
-        //     &self,
-        //     query: QueryAs<'q, DB, O, A>,
-        // ) -> QueryAs<'q, DB, O, A>
-        // where
-        //     DB: Database,
-        //     A: IntoArguments<'q, DB>,
-        // {
-        //     query
-        // }
+        #[allow(late_bound_lifetime_arguments)]
+        fn bind_values<'q, DB, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+        where
+            DB: Database,
+            T: IntoArguments<'q, DB>,
+        {
+            query
+        }
     }
 }

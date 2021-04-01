@@ -1,20 +1,33 @@
 #![allow(dead_code)]
+#![allow(late_bound_lifetime_arguments)]
 
 use buildix_derive::{Filter, Select, SelectBuilder};
 
 #[allow(unused_imports)]
 use buildix::prelude::*;
+use sqlx::postgres::PgPoolOptions;
 use sqlx::Postgres;
+use tokio_test::block_on;
 
 #[test]
 fn test_filter() {
     let mut query = FilterQuery::default();
-    let (q, _) = query.to_sql::<Postgres>().unwrap();
 
-    assert_eq!(
-        q,
-        r#"SELECT u.id FROM user AS u WHERE (priority = ? AND age ISNULL)"#
-    );
+    // now execute
+    block_on(async {
+        let _pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect("postgres://virus:virus@localhost:5432/virus")
+            .await
+            .unwrap();
+
+        let (q, _) = query.to_sql::<Postgres>().unwrap();
+
+        assert_eq!(
+            q,
+            r#"SELECT u.id FROM user AS u WHERE (priority = ? AND age ISNULL)"#
+        );
+    });
 
     query.filter.author_id = Some(2);
     let (q, _) = query.to_sql::<Postgres>().unwrap();

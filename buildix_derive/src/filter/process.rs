@@ -66,6 +66,7 @@ impl From<&crate::select::field::Field> for Field {
 pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens: &mut TokenStream) {
     let mut field_asserts = TokenStream::new();
     let mut field_impl = TokenStream::new();
+    let mut field_bind_impl = TokenStream::new();
 
     for field in &fields {
         let field_type = &field.ty;
@@ -107,6 +108,11 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                 // check if we have filters (count)
                 filter_clauses.push(clause);
             };
+        });
+
+        field_bind_impl.extend(quote! {
+            // call process_filter
+            query = self.#field_ident.bind_values::<'q, DB, O, T>(query);
         });
     }
 
@@ -152,6 +158,8 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
                     DB: sqlx::Database,
                     T: sqlx::IntoArguments<'q, DB>,
             {
+                let mut query = query;
+                #field_bind_impl
                 query
             }
         }

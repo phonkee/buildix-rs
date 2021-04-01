@@ -10,14 +10,17 @@ use sqlx::postgres::Postgres;
 use sqlx::mysql::MySql;
 
 use sqlx::query::QueryAs;
-use sqlx::Pool;
 use sqlx::{Error, IntoArguments};
+use sqlx::{FromRow, Pool};
 
 // select query implementation
 pub trait SelectBuilder {
     // returns query
     fn to_sql<DB: Database>(&mut self) -> crate::Result<(String, Vec<()>)>;
-    fn bind_values<'q, DB, O, T>(&mut self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+    fn prepare_values<'q, DB, O, T>(
+        &mut self,
+        query: QueryAs<'q, DB, O, T>,
+    ) -> QueryAs<'q, DB, O, T>
     where
         DB: Database,
         T: IntoArguments<'q, DB>;
@@ -31,6 +34,15 @@ pub trait Select {
     fn get_table<DB: Database>(&self) -> &'static str;
     fn get_query<DB: Database>(&self) -> &'static str;
     fn get_group<DB: Database>(&mut self) -> Option<&'static str>;
+
+    // instantiate new query
+    fn new_query<'q, DB, O, T>(query: String) -> QueryAs<'q, DB, O, T>
+    where
+        DB: sqlx::Database,
+        T: sqlx::IntoArguments<'q, DB>,
+    {
+        sqlx::query_as::<_, Self>(&query)
+    }
 }
 
 // implement Query for Vec<Query>
@@ -54,5 +66,12 @@ where
     }
     fn get_group<DB: Database>(&mut self) -> Option<&'static str> {
         T::default().get_group::<DB>()
+    }
+    fn new_query<'q, DB, O, A>(query: String) -> QueryAs<'q, DB, O, A>
+    where
+        DB: sqlx::Database,
+        A: sqlx::IntoArguments<'q, DB>,
+    {
+        sqlx::query_as::<_, T>(&query)
     }
 }

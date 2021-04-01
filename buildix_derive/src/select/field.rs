@@ -1,6 +1,6 @@
 use darling::FromField;
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use std::fmt::{Debug, Display};
 
 #[derive(Clone, Debug, FromField)]
@@ -55,5 +55,14 @@ impl Field {
             return Err(crate::Error::InvalidColumn);
         }
         Ok(())
+    }
+
+    pub fn is_vector(&self) -> bool {
+        false
+    }
+
+    pub fn get_inner_type(&self) -> proc_macro2::Ident {
+        println!("{:?}", self.ty);
+        format_ident!("hop")
     }
 }
