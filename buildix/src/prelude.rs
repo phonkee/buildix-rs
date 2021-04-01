@@ -4,21 +4,36 @@ pub use super::delete::DeleteBuilder;
 pub use super::select::{Select, SelectBuilder};
 pub use super::sort::Sort;
 use crate::filter::Nullable;
-use crate::filter::{Filter, FilterInfo, FilterResult};
+use crate::filter::{Filter, FilterInfo};
 use sqlx::database::Database;
+use sqlx::query::QueryAs;
+use sqlx::IntoArguments;
 
 #[macro_export]
 macro_rules! filter_impl {
     {$A:ty} => {
         impl Filter for $A {
-            fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult<DB>> {
+
+            // return query
+            fn filter_query<DB: Database>(&self, fi: &FilterInfo) -> Option<String> {
                 // now we are not none
                 if let Some(expr) = &fi.expr {
-                    Some(FilterResult::new(expr.clone(), vec![], 1))
+                    Some(expr.clone())
                 } else {
-                    Some(FilterResult::new(format!("{} = ?", fi.ident), vec![], 1))
+                    Some(format!("{} = ?", fi.ident))
                 }
             }
+
+            // add arguments to query
+            fn filter_arguments<'q, DB: Database, O, T>(&self, query: QueryAs<DB, O, T>) -> QueryAs<DB, O, T>
+            where
+                DB: Database,
+                T: IntoArguments<'q, DB>,
+            {
+                let mut query = query;
+                query.bind(self)
+            }
+
         }
     };
 }
@@ -36,21 +51,28 @@ impl<T> Filter for Option<T>
 where
     T: Filter,
 {
-    fn process_filter<DB: Database>(&self, fi: &FilterInfo) -> Option<FilterResult<DB>> {
+    fn filter_query<DB: Database>(&self, fi: &FilterInfo) -> Option<String> {
         match self {
             None => {
                 if fi.isnull {
-                    Some(FilterResult::new(
-                        format!("{} ISNULL", fi.ident).to_string(),
-                        vec![],
-                        1,
-                    ))
+                    Some(format!("{} ISNULL", fi.ident).to_string())
                 } else {
                     None
                 }
             }
             Some(val) => val.process_filter::<DB>(fi),
         }
+    }
+
+    fn filter_arguments<'q, DB: Database, O, V>(
+        &self,
+        query: QueryAs<DB, O, V>,
+    ) -> QueryAs<DB, O, V>
+    where
+        DB: Database,
+        V: IntoArguments<'q, DB>,
+    {
+        query
     }
 }
 
@@ -62,17 +84,28 @@ impl<T> Filter for Vec<T>
 where
     T: Filter,
 {
-    fn process_filter<DB: Database>(&self, info: &FilterInfo) -> Option<FilterResult<DB>> {
+    fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String> {
         let len = self.len();
         if len == 0 {
             None
         } else {
             let placeholders: Vec<String> = [0..len].iter().map(|_| "?".to_string()).collect();
-            Some(FilterResult::new(
-                format!("{} IN ({})", info.ident, placeholders.join(", ")),
-                Vec::with_capacity(len),
-                len,
-            ))
+            Some(format!("{} IN ({})", info.ident, placeholders.join(", ")))
         }
+    }
+
+    fn filter_arguments<'q, DB, O, V>(&self, query: QueryAs<DB, O, V>) -> QueryAs<DB, O, V>
+    where
+        DB: Database,
+        V: IntoArguments<'q, DB>,
+    {
+        let mut query = query;
+
+        // apply values
+        for value in self {
+            query = query.bind()
+        }
+
+        query
     }
 }

@@ -3,26 +3,18 @@
 #![allow(unused_imports)]
 
 use sqlx::query::QueryAs;
-use sqlx::{Database, Encode, Type};
+use sqlx::{Database, Encode, IntoArguments, Type};
 
-// FilterResult returns sql clause as well as values assigned.
-#[derive(Default)]
-pub struct FilterResult
-where
-    T: Database,
-{
-    pub clause: String,
-    pub count: usize,
-}
+// Filter trait
+pub trait Filter {
+    // filter_query returns clause if available
+    fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String>;
 
-// FilterResult implementation
-impl FilterResult {
-    pub fn new(clause: String, count: usize) -> Self {
-        Self {
-            clause: clause.trim().to_owned(),
-            count,
-        }
-    }
+    // filter arguments
+    fn filter_arguments<'q, DB, O, T>(&self, query: QueryAs<DB, O, T>) -> QueryAs<DB, O, T>
+    where
+        DB: Database,
+        T: IntoArguments<'q, DB>;
 }
 
 // FilterInfo is passed into filter
@@ -34,22 +26,11 @@ pub struct FilterInfo<'a> {
     pub isnull: bool,
 }
 
-// Filter trait
-pub trait Filter {
-    // filter_query returns clause if available
-    fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String>;
-
-    // filter arguments
-    fn filter_arguments<DB, O>(&self, query: QueryAs<DB, O, true>)
-    where
-        DB: Database;
-}
-
 // Nullable is marker trait for fields that support `isnull`
 pub trait Nullable {}
 
 pub mod fields {
-    use super::{Filter, FilterInfo, FilterResult};
+    use super::{Filter, FilterInfo};
     use crate::filter::Nullable;
     use sqlx::query::QueryAs;
     use sqlx::{Database, IntoArguments};
@@ -77,13 +58,12 @@ pub mod fields {
             }
         }
 
-        fn filter_arguments<DB, O>(&self, query: QueryAs<DB, O, A>)
+        fn filter_arguments<'q, DB, O, A>(&self, query: QueryAs<DB, O, A>) -> QueryAs<DB, O, A>
         where
             DB: Database,
-            O: for<'r> sqlx::FromRow<'r, <DB as Database>::Row>,
-            A: IntoArguments<DB>,
+            A: IntoArguments<'q, DB>,
         {
-            // no-op
+            query
         }
     }
 }

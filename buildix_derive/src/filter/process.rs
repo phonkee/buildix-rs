@@ -114,7 +114,7 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
         });
     }
 
-    let operator = format!(" {} ", operator);
+    let _operator = format!(" {} ", operator);
 
     // generate filter stuff
     tokens.extend(quote! {
@@ -126,28 +126,42 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
         // filter implementation
         impl ::buildix::filter::Filter for #ident {
 
-            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<::buildix::filter::FilterResult<DB>> {
-                let mut filter_values: Vec<DB> = vec![];
-                let mut filter_clauses: Vec<String> = vec![];
-                let mut filter_info = ::buildix::filter::FilterInfo::default();
+            fn process_filter<DB: Database>(&self, info: &::buildix::filter::FilterInfo) -> Option<String> {
 
-                #field_impl
+                // for now
+                None
 
-                // check for clauses
-                if filter_clauses.is_empty() {
-                    None
-                } else {
-                    // get size of values
-                    let len = filter_values.len();
-                    let mut clause = filter_clauses.join(#operator);
-
-                    if filter_clauses.len() > 1 {
-                        clause = format!("({})", clause);
-                    }
-
-                    Some(::buildix::filter::FilterResult::new(clause, filter_values, len))
-                }
+                // let mut filter_values: Vec<DB> = vec![];
+                // let mut filter_clauses: Vec<String> = vec![];
+                // let mut filter_info = ::buildix::filter::FilterInfo::default();
+                //
+                // #field_impl
+                //
+                // // check for clauses
+                // if filter_clauses.is_empty() {
+                //     None
+                // } else {
+                //     // get size of values
+                //     let len = filter_values.len();
+                //     let mut clause = filter_clauses.join(#operator);
+                //
+                //     if filter_clauses.len() > 1 {
+                //         clause = format!("({})", clause);
+                //     }
+                //
+                //     Some(::buildix::filter::FilterResult::new(clause, filter_values, len))
+                // }
             }
+
+            // add arguments to query
+            fn filter_arguments<DB: Databases, O, T>(&self, _query: &mut QueryAs<DB, O, T>)
+            where
+                DB: Database,
+                T: IntoArguments<DB>,
+            {
+                _query
+            }
+
         }
     });
 }
