@@ -33,11 +33,13 @@ macro_rules! filter_impl {
     };
 }
 
+filter_impl!(bool);
+filter_impl!(i64);
+filter_impl!(String);
+
 // filter_impl!(&i32);
 // filter_impl!(i32);
-filter_impl!(i64);
 // filter_impl!(&i64);
-filter_impl!(String);
 // filter_impl!(&String);
 // filter_impl!(&str);
 
