@@ -112,7 +112,7 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
 
         field_bind_impl.extend(quote! {
             // call process_filter
-            query = self.#field_ident.bind_values::<'q, DB, O, T>(query);
+            self.#field_ident.prepare_arguments(arguments);
         });
     }
 
@@ -153,14 +153,9 @@ pub fn process(ident: &syn::Ident, fields: Vec<Field>, operator: String, tokens:
             }
 
             // bind all values
-            fn bind_values<'q, DB, O, T>(&self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
-                where
-                    DB: sqlx::Database,
-                    T: sqlx::IntoArguments<'q, DB>,
-            {
-                let mut query = query;
+            #[allow(unused_variables)]
+            fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b{
                 #field_bind_impl
-                query
             }
         }
     });

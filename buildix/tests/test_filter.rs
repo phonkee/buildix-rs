@@ -79,16 +79,16 @@ struct FilterQuery {
 #[derive(Default, Filter)]
 struct Filter {
     #[buildix(expr = "author_id = ?")]
-    author_id: Option<i32>,
+    author_id: Option<i64>,
 
     #[buildix(expr = "last_updated < ?")]
-    last_updated: Option<i32>,
+    last_updated: Option<i64>,
 
     // automatically provides filter = "priority = ?"
-    priority: i32,
+    priority: i64,
 
     #[buildix(expr = "age > ?", isnull)]
-    age: Option<i32>,
+    age: Option<i64>,
 
     // something
     something: Option<buildix::filter::fields::IsNull>,
@@ -100,8 +100,8 @@ struct Filter {
 #[derive(Debug, Default, Filter)]
 #[buildix(operator = "OR")]
 struct InnerFilter {
-    inner_id: Option<i32>,
-    second: Option<i32>,
+    inner_id: Option<i64>,
+    second: Option<i64>,
 }
 
 #[derive(Default, Select)]
@@ -109,5 +109,5 @@ struct InnerFilter {
 #[derive(sqlx::FromRow)]
 struct SelectUser {
     #[buildix(table = "u")]
-    id: i32,
+    id: i64,
 }

@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_macros)]
 #![allow(unused_imports)]
+#![allow(unused_braces)]
+
+use sqlx::any::AnyArguments;
 #[allow(late_bound_lifetime_arguments)]
 use sqlx::query::QueryAs;
 use sqlx::{Database, Encode, IntoArguments, Type};
@@ -10,14 +13,10 @@ pub trait Filter {
     // filter_query returns clause if available
     fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String>;
 
-    // bind_values
-    fn bind_values<'q, DB, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+    // prepare_arguments
+    fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut AnyArguments)
     where
-        DB: Database,
-        T: IntoArguments<'q, DB>,
-    {
-        query
-    }
+        'a: 'b;
 }
 
 // FilterInfo is passed into filter
@@ -35,12 +34,13 @@ pub trait Nullable {}
 pub mod fields {
     use super::{Filter, FilterInfo};
     use crate::filter::Nullable;
+    use sqlx::any::AnyArguments;
     use sqlx::query::QueryAs;
     use sqlx::{Database, IntoArguments};
 
     // IsNull field that transforms into ISNULL, NOT ISNULL
     // also works with Option seamlessly (as usual)
-    #[derive(Debug, Default, Eq, PartialEq)]
+    #[derive(Debug, Default, Eq, PartialEq, sqlx::Type)]
     pub struct IsNull(bool);
 
     // convert from bool (and back - thanks rust)
@@ -61,13 +61,11 @@ pub mod fields {
             }
         }
 
-        #[allow(late_bound_lifetime_arguments)]
-        fn bind_values<'q, DB, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
+        fn prepare_arguments<'a, 'b>(&'a self, _: &'b mut AnyArguments)
         where
-            DB: Database,
-            T: IntoArguments<'q, DB>,
+            'a: 'b,
         {
-            query
+            // no-op
         }
     }
 }

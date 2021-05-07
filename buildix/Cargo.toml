@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 async-trait = "0.1"
 buildix_derive = { path = "../buildix_derive" }
-sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls"] }
+sqlx = { version = "0.5", features = ["postgres", "runtime-tokio-native-tls", "any"] }
 static_assertions = "1"
 thiserror = "1"
 tonic = { version = "0.4", optional = true }

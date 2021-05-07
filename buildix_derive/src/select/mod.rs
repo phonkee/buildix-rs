@@ -268,7 +268,7 @@ impl quote::ToTokens for SelectBuilder {
 
 
                 // get_query returns query string
-                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, ::sqlx::any::AnyArguments)> {
 
                     // first run map function (if available)
                     #map_fn_impl
@@ -293,19 +293,12 @@ impl quote::ToTokens for SelectBuilder {
 
                     #limit_offset_clause
 
-                    Ok((parts.join(" "), vec![]))
+                    Ok((parts.join(" "), ::sqlx::any::AnyArguments::default()))
                 }
 
-                #[allow(late_bound_lifetime_arguments)]
-                fn prepare_values<'q, DB, O, T>(&mut self, query: sqlx::query::QueryAs<'q, DB, O, T>) -> sqlx::query::QueryAs<'q, DB, O, T>
-                where
-                    DB: Database,
-                    T: sqlx::IntoArguments<'q, DB> {
-                    let mut query = query;
-
+                fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b {
                     // self.bind_values(query)
-
-                    query
+                    // query
                 }
             }
 
@@ -315,8 +308,8 @@ impl quote::ToTokens for SelectBuilder {
             impl ::buildix::execute::SelectExecutor for #ident {
                 /// prepare execute method
                 async fn execute<DB: Database>(&mut self, pool: sqlx::Pool<DB>) -> Result<(), buildix::Error> {
-                    let q = self.to_sql::<DB>()?;
-
+                    // let mut args = ::sqlx::any::AnyArguments::default();
+                    let (q, _) = self.to_sql::<DB>()?;
 
                     println!("this is query for execute: {:?}", q);
                     Ok(())

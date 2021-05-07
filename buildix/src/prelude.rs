@@ -1,13 +1,15 @@
 #![allow(unused_imports)]
+#![allow(unused_variables)]
 
 pub use super::delete::DeleteBuilder;
 pub use super::select::{Select, SelectBuilder};
 pub use super::sort::Sort;
 use crate::filter::Nullable;
 use crate::filter::{Filter, FilterInfo};
+use sqlx::any::AnyArguments;
 use sqlx::database::Database;
 use sqlx::query::QueryAs;
-use sqlx::IntoArguments;
+use sqlx::{Arguments, Encode};
 
 #[macro_export]
 macro_rules! filter_impl {
@@ -24,32 +26,25 @@ macro_rules! filter_impl {
                 }
             }
 
-            // // add arguments to query
-            // fn filter_arguments<'q, DB: Database, O, T>(&self, query: QueryAs<'q, DB, O, T>) -> QueryAs<'q, DB, O, T>
-            // where
-            //     DB: Database,
-            //     T: IntoArguments<'q, DB>,
-            // {
-            //     let mut query = query;
-            //     query.bind(self)
-            // }
-
+            fn prepare_arguments<'a, 'b>(&self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b{
+               // arguments.add(*self.clone());
+            }
         }
     };
 }
 
-filter_impl!(&i32);
-filter_impl!(i32);
+// filter_impl!(&i32);
+// filter_impl!(i32);
 filter_impl!(i64);
 filter_impl!(&i64);
 filter_impl!(String);
-filter_impl!(&String);
-filter_impl!(&str);
+// filter_impl!(&String);
+// filter_impl!(&str);
 
 // implement filter for option
-impl<T> Filter for Option<T>
+impl<'e, T> Filter for Option<T>
 where
-    T: Filter,
+    T: Filter + Send + Sync + Encode<'e, sqlx::Any>,
 {
     fn filter_query<DB: Database>(&self, fi: &FilterInfo) -> Option<String> {
         match self {
@@ -64,16 +59,17 @@ where
         }
     }
 
-    // fn filter_arguments<'q, DB: Database, O, V>(
-    //     &self,
-    //     query: QueryAs<'q, DB, O, V>,
-    // ) -> QueryAs<'q, DB, O, V>
-    // where
-    //     DB: Database,
-    //     V: IntoArguments<'q, DB>,
-    // {
-    //     query
-    // }
+    fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut AnyArguments)
+    where
+        'a: 'b,
+    {
+        match self {
+            None => {}
+            Some(val) => {
+                // arguments.add(val.clone());
+            }
+        };
+    }
 }
 
 // Option is nullable
@@ -94,18 +90,13 @@ where
         }
     }
 
-    // fn filter_arguments<'q, DB, O, V>(&self, query: QueryAs<DB, O, V>) -> QueryAs<'q, DB, O, V>
-    // where
-    //     DB: Database,
-    //     V: IntoArguments<'q, DB>,
-    // {
-    //     let mut query = query;
-    //
-    //     // apply values
-    //     for value in self {
-    //         query = query.bind()
-    //     }
-    //
-    //     query
-    // }
+    fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut AnyArguments)
+    where
+        'a: 'b,
+    {
+        // apply values
+        for value in self {
+            // arguments.add(value);
+        }
+    }
 }

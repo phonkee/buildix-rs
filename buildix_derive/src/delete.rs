@@ -173,7 +173,7 @@ impl quote::ToTokens for Builder {
             impl ::buildix::DeleteBuilder for #ident {
 
                 // generate sql along with arguments
-                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, Vec<()>)> {
+                fn to_sql<DB: Database>(&mut self) -> buildix::Result<(String, ::sqlx::any::AnyArguments)> {
 
                     // check map now
 
@@ -190,7 +190,7 @@ impl quote::ToTokens for Builder {
                     // now limit
                     #limit_impl
 
-                    Ok((query, vec![]))
+                    Ok((query, ::sqlx::any::AnyArguments::default()))
                 }
             }
 

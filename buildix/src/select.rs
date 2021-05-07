@@ -9,6 +9,7 @@ use sqlx::postgres::Postgres;
 #[cfg(feature = "mysql")]
 use sqlx::mysql::MySql;
 
+use sqlx::any::AnyArguments;
 use sqlx::query::QueryAs;
 use sqlx::{query_as, Error, IntoArguments};
 use sqlx::{FromRow, Pool};
@@ -16,14 +17,10 @@ use sqlx::{FromRow, Pool};
 // select query implementation
 pub trait SelectBuilder {
     // returns query
-    fn to_sql<DB: Database>(&mut self) -> crate::Result<(String, Vec<()>)>;
-    fn prepare_values<'q, DB, O, T>(
-        &mut self,
-        query: QueryAs<'q, DB, O, T>,
-    ) -> QueryAs<'q, DB, O, T>
+    fn to_sql<DB: Database>(&mut self) -> crate::Result<(String, sqlx::any::AnyArguments)>;
+    fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut AnyArguments)
     where
-        DB: Database,
-        T: IntoArguments<'q, DB>;
+        'a: 'b;
 }
 
 // Query trait
