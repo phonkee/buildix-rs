@@ -9,7 +9,7 @@ use crate::filter::{Filter, FilterInfo};
 use sqlx::any::AnyArguments;
 use sqlx::database::Database;
 use sqlx::query::QueryAs;
-use sqlx::{Arguments, Encode};
+use sqlx::{Arguments, Encode, Type};
 
 #[macro_export]
 macro_rules! filter_impl {
@@ -26,8 +26,8 @@ macro_rules! filter_impl {
                 }
             }
 
-            fn prepare_arguments<'a, 'b>(&self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b{
-               // arguments.add(*self.clone());
+            fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b{
+               arguments.add(self.clone());
             }
         }
     };
@@ -36,15 +36,15 @@ macro_rules! filter_impl {
 // filter_impl!(&i32);
 // filter_impl!(i32);
 filter_impl!(i64);
-filter_impl!(&i64);
+// filter_impl!(&i64);
 filter_impl!(String);
 // filter_impl!(&String);
 // filter_impl!(&str);
 
 // implement filter for option
-impl<'e, T> Filter for Option<T>
+impl<T> Filter for Option<T>
 where
-    T: Filter + Send + Sync + Encode<'e, sqlx::Any>,
+    T: Filter,
 {
     fn filter_query<DB: Database>(&self, fi: &FilterInfo) -> Option<String> {
         match self {
@@ -66,7 +66,7 @@ where
         match self {
             None => {}
             Some(val) => {
-                // arguments.add(val.clone());
+                val.prepare_arguments(arguments);
             }
         };
     }
@@ -78,7 +78,7 @@ impl<T> Nullable for Option<T> {}
 // add IN
 impl<T> Filter for Vec<T>
 where
-    T: Filter,
+    T: Filter + Send + Sync,
 {
     fn filter_query<DB: Database>(&self, info: &FilterInfo) -> Option<String> {
         let len = self.len();
@@ -96,7 +96,7 @@ where
     {
         // apply values
         for value in self {
-            // arguments.add(value);
+            value.prepare_arguments(arguments);
         }
     }
 }
