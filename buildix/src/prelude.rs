@@ -27,7 +27,7 @@ macro_rules! filter_impl {
             }
 
             fn prepare_arguments<'a, 'b>(&'a self, arguments: &'b mut ::sqlx::any::AnyArguments) where 'a: 'b{
-               arguments.add(self);
+               arguments.add(self.clone());
             }
         }
     };
